@@ -1,0 +1,35 @@
+API CHANGES
+
+The functions getYAKThreadid(), getYAUThreadid(), closeYAUThread() and
+getYAKThread() do not accept a threaddesc * parameter. Instead, they operate on
+the currently-running thread. This is because unfinished threads are
+reorganized in the internal array when a thread completes (in YAU) and because
+my linked list implementation isn't thread-safe (in YAK).
+
+COMPILING AND RUNNING
+
+Run "make threadlib" to make libYAK.a and libYAU.a. Run "make test" to generate
+testYAK, testYAU and testYAUPolicy. These test programs all run
+non-interactively with no arguments.
+
+LIST OF FILES
+
+README: this file
+YAKThreads.c: YAKThreads implementation
+YAKThread.h: YAKThreads API
+YAUThreads.c: YAUThreads implementation
+YAUThread.h: YAUThreads API
+list.[ch]: linked list library (used by YAKThreads)
+priority_scheduling.txt: Priority scheduling rationale
+testYAK.c: YAKThreads test, as given in the marking scheme
+testYAU.c: YAUThreads test
+testYAUPolicy.c: YAUThreads test, as given in the marking scheme
+
+LIST OF FUNCTIONS
+
+Read YAUThreads.h and YAKThreads.h for API descriptions.
+
+RESTRICTIONS
+
+As discussed above (in API CHANGES), a thread cannot close another thread or
+get another thread's ID.

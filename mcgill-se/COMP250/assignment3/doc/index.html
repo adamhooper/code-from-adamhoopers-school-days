@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COMP202 Assignment 3</title><link rel="stylesheet" href="style.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.64.1" /></head><body><div class="article" lang="en" xml:lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="id2400147"></a>COMP202 Assignment 3</h1></div><div><div class="author"><h3 class="author"><span class="firstname">Adam</span> <span class="surname">Hooper</span></h3><div class="affiliation"><div class="address"><p><br />
+					<span class="otheraddr">McGill ID: 260055737</span><br />
+					<tt class="email">&lt;<a href="mailto:adam.hooper@mail.mcgill.ca">adam.hooper@mail.mcgill.ca</a>&gt;</tt><br />
+				</p></div></div></div></div></div><div></div><hr /></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#id2440604">Question 1</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2440610">Part A</a></span></dt><dt><span class="sect2"><a href="#id2440641">Part B</a></span></dt><dt><span class="sect2"><a href="#id2440666">Part C</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2439155">Question 2</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2440604"></a>Question 1</h2></div></div><div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2440610"></a>Part A</h3></div></div><div></div></div><p>We are asked the following:</p><div class="mediaobject"><img src="q1a-q.png" /></div><p>Here is a proof:</p><div class="mediaobject"><img src="q1a-a.png" /></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2440641"></a>Part B</h3></div></div><div></div></div><p>We are asked the following:</p><div class="mediaobject"><img src="q1b-q.png" /></div><p>The proof is given in my answer to Part C.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2440666"></a>Part C</h3></div></div><div></div></div><p>We are asked the following:</p><div class="mediaobject"><img src="q1c-q.png" /></div><p>I've written a proof which encompasses both Part B and Part C:</p><div class="mediaobject"><img src="q1c-a.png" /></div></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2439155"></a>Question 2</h2></div></div><div></div></div><p>We are asked to develop a Quintit calculator which supports addition, subtraction, multiplication, division (all mod <tt class="literal">5</tt>) and nested parantheses with proper order of operations. Before creating the calculator, though, a <tt class="classname">Quintit</tt> class is needed. It is a very simple, straightforward class:</p><pre class="programlisting">public class Quintit
+{
+	private int val;
+
+	public Quintit (int i)
+	{
+		val = i;
+	}
+
+	public Quintit (String s)
+	{
+		val = Integer.parseInt (s);
+	}
+
+	public Quintit add (Quintit q)
+	{
+		return new Quintit ((val + q.val) % 5);
+	}
+
+	public Quintit subtract (Quintit q)
+	{
+		return new Quintit ((5 + val - q.val) % 5);
+	}
+
+	public Quintit multiply (Quintit q)
+	{
+		return new Quintit (val * q.val % 5);
+	}
+
+	public Quintit divide (Quintit q)
+	{
+		for (byte _b = 0; _b &lt; 5; _b++)
+		{
+			Quintit _q = new Quintit (_b);
+			if (q.multiply (_q).val == 1)
+			{
+				return multiply (_q);
+			}
+		}
+
+		throw new ArithmeticException ("Divide by zero");
+	}
+
+	public String toString ()
+	{
+		return "" + val;
+	}
+}
+</pre><p>With <tt class="classname">Quintit</tt>s available, a calculator can be coded. It stores two stacks: <tt class="literal">digits</tt>, a stack of <tt class="classname">Quintit</tt>s; and <tt class="literal">operators</tt>, a stack of one-character-long <tt class="classname">String</tt>s containing one of <tt class="literal">+</tt>, <tt class="literal">-</tt>, <tt class="literal">*</tt>, <tt class="literal">/</tt> and <tt class="literal">(</tt>.</p><p>The <tt class="methodname">calculate</tt> method takes a <tt class="classname">String</tt> expression as input, with digits and operators. It is assumed the input is sane. Each <tt class="literal">char</tt>acter in the <tt class="classname">String</tt> is passed to <tt class="methodname">handleChar</tt>.</p><p>Within <tt class="methodname">handleChar</tt>, the two stacks are manipulated. If <tt class="literal">c</tt> is a <tt class="classname">Quintit</tt>, it is pushed onto the <tt class="literal">digits</tt> stack. If the operator before this digit indicates multiplication or division, the operation is performed immediately.</p><p>If <tt class="literal">c</tt> is a addition or subtraction operator, the previous operator will be applied to the previous two digits, since anything to the left of a <tt class="literal">+</tt> or <tt class="literal">-</tt> can be treated as if it were in parentheses. If <tt class="literal">c</tt> is <span class="emphasis"><em>any</em></span> operator, it is pushed onto the <tt class="literal">operators</tt> stack.</p><p>If <tt class="literal">c</tt> is an opening parenthesis, it is pushed onto the <tt class="literal">operators</tt> stack. This serves as a kind of marker: anything before the <tt class="literal">(</tt> in the stack is out of scope.</p><p>If <tt class="literal">c</tt> is a closing parenthesis, the stacks are simplified until the top operator is <tt class="literal">(</tt>; this means the expression between parentheses has been simplified by a single number which is already on the top of the <tt class="literal">digits</tt> stack, so the <tt class="literal">(</tt> is popped off the top of the <tt class="literal">operators</tt> stack. The contents of the parentheses have been reduced to a single number, and so <tt class="methodname">handleChar</tt> acts as if it has received a single digit and not a <tt class="literal">)</tt> character.</p><p>The <tt class="literal">operators</tt> stack never contains a <tt class="literal">)</tt> character: when a <tt class="literal">)</tt> is reached everything between parentheses is replaced by the simplified equivalent expression.</p><p>When the entire input string has been parsed, <tt class="literal">digits</tt> will either contain a single <tt class="classname">Quintit</tt> or two. In the latter case, the single operator in the <tt class="literal">operators</tt> stack is either a <tt class="literal">+</tt> or <tt class="literal">-</tt> and so it is applied to the <tt class="literal">digits</tt> stack.</p><p>The <tt class="literal">digits</tt> stack is thus simplified, and its single remaining <tt class="classname">Quintit</tt> is returned.</p><p>The Java code for my calculator:</p><pre class="programlisting">import java.util.Stack;
+
+public class QuintitCalculator
+{
+	private Stack digits;
+	private Stack operators;
+
+	public QuintitCalculator ()
+	{
+		digits = new Stack ();
+		operators = new Stack ();
+	}
+
+	private boolean isQuintit (char c)
+	{
+		return (c &gt;= '0' &amp;&amp; c &lt;= '4');
+	}
+
+	private boolean isPushableOperator (char c)
+	{
+		String s = "+-*/(";
+
+		return s.indexOf (c) != -1;
+	}
+
+	private String nextOperator ()
+	{
+		if (operators.isEmpty ()) return "";
+
+		return (String) operators.peek ();
+	}
+
+	private void handlePushableOperator (char c)
+	{
+		if ((c == '+' || c == '-')
+			&amp;&amp; digits.size() &gt; 1
+			&amp;&amp; nextOperator ().equals ("(") == false)
+		{
+			// (a - b + c) == (a - b) + c
+			// In this step, we're at the '+' before c 
+			// So we'll calculate the (a - b) 
+			calculateStep ();
+		}
+
+		operators.push ("" + c);
+	}
+
+	private void handleChar (char c)
+	{
+		if (isPushableOperator (c))
+		{
+			handlePushableOperator (c);
+			return;
+		}
+
+		if (isQuintit (c))
+		{
+			digits.push (new Quintit (c - '0'));
+
+			if (operators.isEmpty ()) return;
+		}
+
+		if (c == ')')
+		{
+			if (nextOperator ().equals ("(") == false)
+			{
+				calculateStep ();
+			}
+
+			operators.pop (); // "("
+		}
+
+		// We can multiply or divide right away
+		if (nextOperator ().equals ("*")
+			|| nextOperator ().equals ("/"))
+		{
+			calculateStep ();
+		}
+	}
+
+	public Quintit calculate (String s)
+	{
+		for (int i = 0; i &lt; s.length (); i++)
+		{
+			handleChar (s.charAt (i));
+		}
+
+		if (digits.size () &gt; 1) // Missing a single + or -
+		{
+			calculateStep ();
+		}
+
+		return (Quintit) digits.pop ();
+	}
+
+	private void calculateStep ()
+	{
+		Quintit q1, q2;
+		String op;
+
+		q2 = (Quintit) digits.pop ();
+		q1 = (Quintit) digits.pop ();
+
+		op = (String) operators.pop ();
+
+		switch (op.charAt (0))
+		{
+			case '+':
+				digits.push (q1.add (q2));
+				return;
+			case '-':
+				digits.push (q1.subtract (q2));
+				return;
+			case '*':
+				digits.push (q1.multiply (q2));
+				return;
+			case '/':
+				digits.push (q1.divide (q2));
+				return;
+		}
+
+		throw new AssertionError ("Invalid operation");
+	}
+}
+</pre><p>I then wrote a very simple front-end which uses this calculator:</p><pre class="programlisting">public class Main
+{
+	public static void main (String[] a)
+	{
+		QuintitCalculator c;
+		Quintit q;
+
+		if (a.length != 1)
+		{
+			System.err.println ("usage: Main [expression]");
+			return;
+		}
+
+		c = new QuintitCalculator ();
+		try {
+			q = c.calculate (a[0]);
+		}
+		catch (ArithmeticException e)
+		{
+			System.err.println ("DIVISION BY ZERO");
+			return;
+		}
+
+		System.out.println (q);
+	}
+}
+</pre><p>My program gives the correct answers to all the test cases given in the assignment:</p><pre class="screen"><tt class="prompt">adam@hera:build$ </tt><b class="userinput"><tt>java Main '3+(4*2)'</tt></b>
+<tt class="computeroutput">1</tt>
+<tt class="prompt">adam@hera:build$ </tt><b class="userinput"><tt>java Main '1+2*2'</tt></b>
+<tt class="computeroutput">0</tt>
+<tt class="prompt">adam@hera:build$ </tt><b class="userinput"><tt>java Main '3/(1+1)'</tt></b>
+<tt class="computeroutput">4</tt>
+<tt class="prompt">adam@hera:build$ </tt><b class="userinput"><tt>java Main '2*4/(2+1)/(3-2*4)+3'</tt></b>
+<tt class="computeroutput">DIVISION BY ZERO</tt></pre></div></div></body></html>

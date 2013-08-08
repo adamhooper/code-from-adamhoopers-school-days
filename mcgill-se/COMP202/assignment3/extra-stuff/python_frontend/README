@@ -1,0 +1,7 @@
+This is my first time using C functions in Python. All I had to do was
+write solver-python.c, make a simple setup.py, `./setup.py build', and copy
+the .so from the newly-created build/ directory into the gui directory.
+
+Inside the gui directory is the entire frontend. All you gotta do is run
+'./main.py' -- but it needs solver.so either in there or installed with
+'./setup.py install' (as root).

@@ -1,0 +1,208 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{fullpage}
+\usepackage{clrscode}
+
+\begin{document}
+
+\title{COMP251 Assignment 1}
+\author{Adam Hooper\\
+        260055737}
+\date{February 1, 2005}
+\maketitle
+
+\section*{1. Exercise 2.3-7}
+
+We are asked to describe a $\Theta(n \lg{n})$ algorithm which takes a set $S$ of $n$ integers and another integer $x$ and determines whether or not there exist two elements in $S$ whose sum is exactly $x$.
+
+\begin{codebox}
+\Procname{$\proc{Exist-Two-Elems-With-Sum-X}(S, x)$}
+\li  $\proc{Merge-Sort}(S)$
+\li  \For $i \gets 1$ \To $\proc{Length}(S) - 1$
+\li    \Do
+         \If $\proc{Binary-Search}(S, x - S[i])$
+\li        \Do \Return \const{true} \End
+       \End
+\li  \Return \const{false}
+\end{codebox}
+
+The running time analysis is simple: there are $n$ elements in $S$; for each element, an $O(\lg n)$ binary search is performed. Therefore, iterating over all elements will take $O(n \lg n)$ time. The initial sorting is also done in $O(n \lg n)$ time. The sum is $O(n \lg n)$ and so this algorithm solves the problem.
+
+\section*{2. Problem 4-2}
+
+We are given an array $A\left[1 \twodots n\right]$, which we can only access a single bit at a time.
+
+This implies we should look at the array differently: instead of being a single-dimensional array of integers, look at it as a two-dimensional array of bits. The first index (row) specifies the integer, and the second (column) specifies the bit of that integer. The array size is $n \times \lceil\lg{n}\rceil$. Retrieving an element from $A$ takes $O(1)$ time.
+
+Obviously, since $n \times \lceil \lg n \rceil \ge n$, we cannot look at every bit of the two-dimensional array in our solution.
+
+To solve the problem, create a second array, $B\left[1 \twodots n\right]$: each element of $B$ is an index into an element of $A$. Assume that indexing $B$ also takes $O(1)$ time. Initially, populate $B$ with $1, 2, 3, ..., n$.
+
+For the first pass of our solution algorithm, we must first decide whether $n$ is even or odd. If $n$ is even, then there ``ought'' to be an equal number of even and odd numbers in $A$, but one is missing: if there are more even numbers than odd numbers in $A$, then an odd one is missing; otherwise, an even is missing. If $n$ is odd, then there ``ought'' to be one more odd number than even number in $A$, but one is missing: if there are as many even as odd numbers in $A$, then an odd number is missing; otherwise, an even number is missing.
+
+The pass is simple, but takes two steps. In the first step, simply iterate over the least significant bit of each integer in $A$, counting the number of $1$'s.  This will determine whether the missing number is even or odd. Next, iterate over $B$, checking the least significant bit of the numbers it refers to in $A$: if the number in $A$ ends in $1$, it is odd; if we've decided an odd number is missing, remove this entry from $B$. If the number in $A$ ends in $0$, it is even; if an even number is missing, remove the associated entry from $B$. The array $B$ will then only index into the elements of $A$ whose even-ness is the same as that of the missing value.
+
+This pass will read $2n$ entries from $A$.
+
+The second (and subsequent) passes are modeled after the first but look at increasingly more significant bits. For each pass, we must first calculate how many $1$s and $0$s are required in the specified column. This can be deduced solely by $n$'s value and the bits we have already inspected. For example, in the second pass we will already have eliminated half the numbers in $A$ (by removing their indices from $B$). Through simple algebra, we can use this fact coupled with the value of $n$ to calculate the desired number of $1$s and $0$s in the second-least significant digit of each number in $A$.
+
+After making this calculation, we can then iterate over $B$, using its values to index into $A$ (looking only at the second-least significant bit). After calculating the total number of $1$s, we know whether a $1$ or $0$ is missing; we then iterate through $B$ again, deleting its entry if we have determined its associated entry in $A$ to be invalid.
+
+The second such pass will read under $\frac{2n}{2} = n$ entries from $A$. The third pass will read under $\frac{2n}{4} = \frac{n}{2}$.
+
+When $1$ element remains in $B$, we can read the entire number it indexes in $A$. Using algebra involving $n$, we can determine whether to flip its most significant bit or two. The resulting number (which was read in $O(\lg{n})$ time from $A$) is our result.
+
+We can use the master method to analyze the running time of the recursive part of our algorithm. $T(n) = T(\frac{n}{2}) + \Theta(n)$: the recursion always runs on an array half the original's size, and each pass completes in $O(n)$ time. In the generalized master method, $T(n) = a T(\frac{n}{b}) + f(n)$, $a = 1$, $b = 2$, and $f(n) = \Theta(n)$. $\log_b{a} = \log_2{1} = 0$, so case 3 of the master method applies: $T(n) = \Theta(f(n)) = \Theta(n)$.
+
+The final part of the algorithm (that is, the reading of the final integer) only takes $O(\lg{n})$ time; thus, the entire algorithm runs in $O(n)$ time.
+
+\section*{3. Exercise 7.4-5}
+
+We are asked to evaluate the running time of \proc{Quicksort} when we only call \proc{Partition} on sections of the array larger than $k$ elements and use \proc{Insertion-Sort} on the ``nearly''-sorted resulting array.
+
+As with calculating classic \proc{Quicksort}'s running time, we will start by creating an indicator random variable:
+
+\begin{eqnarray*}
+X_{ij} = \mbox{I}\left\{z_i \mbox{ is compared to } z_j\right\}
+\end{eqnarray*}
+
+The total number of comparisons within the \proc{Partition} algorithm is:
+
+\begin{eqnarray*}
+X &=& \sum_{i=1}^{n-1}{\sum_{j=i+1}^n{X_{ij}}}
+\end{eqnarray*}
+
+Using linearity of expectation (still following the regular \proc{Quicksort} running time calculation):
+
+\begin{eqnarray*}
+\mbox{E}\left[X\right] &=& \mbox{E}\left[\sum_{i=1}^{n-1}{\sum_{j=i+1}^n{X_{ij}}}\right] \\
+&=& \sum_{i=1}^{n-1}{\sum_{j=i+1}^{n}{\mbox{E}\left[X_{ij}\right]}} \\
+&=& \sum_{i=1}^{n-1}{\sum_{j=i+1}^n{\mbox{Pr}\left\{z_i \mbox{ is compared to } z_j\right\}}}
+\end{eqnarray*}
+
+Here is where this combination of algorithms differs from straightforward \proc{Quicksort}: the probability that $z_i$ is compared to $z_j$. In regular \proc{Quicksort}, this would be the probability that either $z_i$ or $z_j$ is chosen as pivot ($\frac{2}{j-i+1}$). In our modified version, we also have to take into account that if $j-i \le k$ the items will not be compared and so the probability of their being compared is $0$.
+
+\begin{eqnarray*}
+\mbox{E}\left[X\right] &=& \sum_{i=1}^{n-1}{\sum_{j=i+1}^n{\mbox{Pr}\left\{z_i \mbox{ is compared to } z_j\right\}}} \\
+&=& \sum_{i=1}^{n-1}\left[\sum_{j=i+1}^{k+i-2}{0} + \sum_{j=k+i-1}^n{\frac{2}{j-i+1}}\right] \\
+&=& \sum_{i=1}^{n-1}{\sum_{j=i+1}^{n}{\frac{2}{j-i+1}}} - \sum_{i=1}^{n-1}{\sum_{j=i+1}^{k+i-2}{\frac{2}{j-i+1}}} \\
+&=& \sum_{i=1}^{n-1}{\sum_{m=1}^{n-i}{\frac{2}{m+1}}} - \sum_{i=1}^{n-1}{\sum_{m=1}^{k-2}{\frac{2}{m+1}}} \\
+\end{eqnarray*}
+
+As in the original \proc{Quicksort} proof, the minuend is $\Theta(n \lg n)$. And the subtrahend, it is easy to see, is $\Theta(n \lg k)$. This is enough to get the total running time of the \proc{Quicksort} half of our algorithm:
+
+\begin{eqnarray*}
+\mbox{running time} &=& \Theta(n \lg n) - \Theta(n \lg k) \\
+&=& \Theta(n \lg n - n \lg k) \\
+&=& \Theta(n \times \left(\lg n - \lg k\right)) \\
+&=& \Theta(n \lg{\frac{n}{k}})
+\end{eqnarray*}
+
+The \proc{Insertion-Sort} part of the algorithm is much easier to analyze. There are at most $\frac{n}{k}$ sorts being done, each of maximum size $k^2$. So the total running time will be $\Theta(k^2 \times \frac{n}{k}) = \Theta(nk)$.
+
+Combining the two:
+
+\begin{eqnarray*}
+\mbox{total running time} &=& \Theta(n \lg{\frac{n}{k}}) + \Theta(nk) \\
+&=& \Theta(nk + n \lg{\frac{n}{k}})
+\end{eqnarray*}
+
+...and so that is the running time of our new algorithm.
+
+The next part of the question asks how to pick $k$. In theory, we would want our running time to grow as slowly as possible. So we can rearrange the equation:
+
+\begin{eqnarray*}
+nk + n \lg{\frac{n}{k}} &=& n \left( k + \lg n - \lg k \right) \\
+&=& n \left( \lg n + (k - \lg k) \right) \\
+\end{eqnarray*}
+
+We can see that we need a $k$ which grows more slowly than $\lg n$, that is, $k = O(\lg n)$.
+
+In practice, we know that $k$ must be a constant: for low values of $k$, \proc{Insertion-Sort} is faster than \proc{Quicksort}; for higher values of $k$, \proc{Quicksort} is faster. This value of $k$ will be dependent on each particular implementation of the algorithm.
+
+For example, on average for all possible orderings of a nine-element array, \proc{Insertion-Sort} will perform $45$ comparisons and $18$ exchanges, while \proc{Quicksort} will perform only $34.95$ comparisons but $33.98$ exchanges. One could assume that for most programming languages and hardware architectures an exchange would take significantly longer than a comparison (hence $k > 9$), but how much longer? Also, running an algorithm on all possible permutations of nine-element arrays takes a matter of seconds, but since the number of permutations grows factorially, how long would it take to actually run all possible permutations of, say, fifteen-element arrays? Such testing is not practical.
+
+Moreover, there is a false assumption made in the above reasoning. Even if \proc{Insertion-Sort} is faster than \proc{Quicksort} for an array of $k$ elements, which would be better: Using \proc{Quicksort} to produce many arrays with an absolute maximum of $k$ elements (most of these arrays being much smaller, i.e., \proc{Quicksort} did too much work), or using \proc{Quicksort} to produce fewer arrays with an absolute maximum of more than $k$ elements but with an average of $k$ (or maybe fewer) elements?
+
+Because of all these complications, the only practical approach is to take a bunch of problem-domain arrays and try sorting them with different values of $k$. A search on Google would suggest that $k = 15$ is a decent value in a C implementation on x86 architecture.
+
+\section*{4. Problem 7-4}
+
+\subsection*{a. Argue that \proc{Quicksort'} sorts correctly}
+
+The basic \proc{Quicksort} calls itself on the left half of the array ($A[p \twodots q-1]$) and then the right half of the array ($A[q+1 \twodots r]$). \proc{Quicksort'} calls itself on the left half of the array ($A[p \twodots q-1]$) and then iterates; before iterating, it sets $p = q + 1$. By setting $p = q + 1$ and then iterating back to the beginning of the function (reminder: its signature is $\proc{Quicksort'}(A, p, r)$), it is essentially calling $\proc{Quicksort'}(A, q + 1, r)$: calling itself on the right half of the array ($A[q+1 \twodots r]$).
+
+\subsection*{b. $\Theta(n)$ scenario}
+
+If the array is already sorted, both the original \proc{Quicksort} and this problem's \proc{Quicksort'} would make the same mistake: call \proc{Partition} to move the last element to the last partition, and then recursively call \proc{Partition} to move the second-last element to the second-last position, and so on. This would create a stack of size $n$.
+
+\subsection*{c. Worst-case stack depth $\Theta(\lg n)$}
+
+To achieve a worst-case stack depth of $\Theta(\lg n)$, we can simply always recurse on the smaller half of the array and iterate over the larger.
+
+\begin{codebox}
+\Procname{$\proc{Quicksort'}(A, p, r)$}
+\li  \While $p < r$
+\li    \Do \Comment Partition and sort smaller subarray.
+\li      $q \gets \proc{Partition}(A, p, r)$
+\li      \If $q - p > r - q$
+\li        \Then
+             $\proc{Quicksort'}(A, q + 1, r)$
+\li          $r \gets q - 1$
+\li        \Else
+             $\proc{Quicksort'}(A, p, q - 1)$
+\li          $p \gets q + 1$
+         \End
+       \End
+\end{codebox}
+
+It is trivial to prove that the stack depth grows as slowly as $\Theta(\lg n)$. Simply notice that at each recursion, \proc{Quicksort'} is being called on an array of at most half the original array's size.
+
+\section*{5. Problem 9-1}
+
+\subsection*{a. Sort numbers, list $i$ largest}
+
+\begin{codebox}
+\Procname{$\proc{Sort-Then-List}(A, i)$}
+\li  $\id{len} \gets \proc{Length}(A)$
+\li  $\proc{Merge-Sort}(A, 1, \id{len})$
+\li  \Return $A[\id{len} - i + 1 \twodots \id{len}]$
+\end{codebox}
+
+The running time is trivial to analyze: \proc{Merge-Sort}'s running time $O(n \lg n)$ and building the return array takes $O(i)$ time. Since $i \le n$, the entire algorithm is $O(n \lg n)$.
+
+\subsection*{b. Build max-priority queue and call \proc{Extract-Max} $i$ times}
+
+\begin{codebox}
+\Procname{$\proc{Build-Queue-And-Extract}(A, i)$}
+\li  $\proc{Build-Max-Heap}(A)$
+\li  \For $j \gets i$ \To $1$
+\li    \Do
+         $R[j] \gets \proc{Heap-Extract-Max}(A)$
+       \End
+\li  \Return $R$
+\end{codebox}
+
+This algorithm's running time is also easy to analyze. The running time of \proc{Build-Max-Heap} is $O(n)$ and the running time of \proc{Heap-Extract-Max} is $O(\lg n)$. \proc{Heap-Extract-Max} is called $i$ times. So the total running time is $O(n + i \lg n)$.
+
+\subsection*{c. Use an order-statistic algorithm, partition, and sort}
+\begin{codebox}
+\Procname{$\proc{Select-Partition-Sort}(A, i)$}
+\li  $\id{len} \gets \proc{Length}(A)$                  \label{li:select-partition-sort-length}
+\li  $\proc{Select}(A, 1, \id{len}, i)$                 \label{li:select-partition-sort-select}
+\li  $\proc{Merge-Sort}(A, \id{len} - i + 2, \id{len})$ \label{li:select-partition-sort-sort}
+\li  \Return $A[\id{len} - i + 1 \twodots \id{len}]$    \label{li:select-partition-sort-return}
+\end{codebox}
+
+This algorithm is divided into distinct parts; the running time of each part can be determined separately.
+
+Line \ref{li:select-partition-sort-length} calculates the length of $A$. It runs either in $O(n)$ time or $O(1)$ time, depending on the array implementation. As we will see, this line's running time is insignificant.
+
+Line \ref{li:select-partition-sort-select} partitions $A$ so that the $i$ largest elements are at the end. As discussed in class and in the book, \proc{Select} runs in $O(n)$ time.
+
+Line \ref{li:select-partition-sort-sort} simply sorts the end of $A$. It sorts $i-1$ elements, and so its running time is $O(i)$.
+
+Finally, line \ref{li:select-partition-sort-return} must iterate over $i$ elements; its running time is $O(i)$.
+
+Simple algebra lets us conclude that the total running time is $O(n) + O(i)$. And since $i \le n$, the total running time is simply $O(n)$.
+
+\end{document}

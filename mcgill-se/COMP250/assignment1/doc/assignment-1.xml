@@ -1,0 +1,360 @@
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+	<!-- {{{ articleinfo -->
+	<articleinfo>
+		<title>COMP250 Assignment 1</title>
+
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address><email>adam.hooper@mail.mcgill.ca</email></address>
+			</affiliation>
+		</author>
+
+	</articleinfo>
+	<!-- }}} end articleinfo -->
+	<!-- {{{ Question 1 -->
+	<sect1 id="question-1">
+		<title>Question 1</title>
+		<para>This question was relatively simple: instead of trying to modify the given recursive algorithm, it's much easier to go back to the definition of the multiplication, as it was given in class. Keep a running sum; divide <literal>b</literal> by two every time <literal>a</literal> is multiplied by two, and add the remainder to the sum all the time. Once <literal>b</literal> is <literal>0</literal>, the sum is the answer.</para>
+		<para>Keeping in mind how binary numbers are stored, there's some farther simplification: Instead of just using integer division and multiplication, use bitshifting instead. Not only is it much faster way of dividing or multiplying by two, but the algorithm works perfectly with both positive and negative numbers.</para>
+		<para>Below is the program listing.</para>
+		<programlisting><![CDATA[public static long mulalarusse (long a, long b)
+{
+	long result = 0;
+																			
+	while (b != 0)
+	{
+		if ((b & 1) == 1)
+		{
+			result += a;
+		}
+																			
+		a <<= 1;
+		b >>>= 1;
+	}
+																			
+	return result;
+}]]></programlisting>
+	</sect1>
+	<!-- }}} End Question 1 -->
+	<!-- {{{ Question 2 -->
+	<sect1 id="question-2">
+		<title>Question 2</title>
+		<para>First of all, two <methodname>mulmod</methodname> methods must be created: one based on the algorithm given, and another done the most natural way. Call them <methodname>mulmod_java</methodname> and <methodname>mulmod</methodname>, respectively. The latter is an obvious one-liner, and the former is simply a transcription of the given pseudo-code to Java (though bit-shifting was used instead of division and subtraction/division, for simplicity's sake).</para>
+		<para>I've included a method called <methodname>addmod_java</methodname>, which simply returns <literal>(a + b) % n</literal>. This method will be edited in <xref linkend="question-3"/>.</para>
+		<programlisting><![CDATA[public static long addmod_java (long a, long b, long n)
+{
+	// Return something impossible if Java can't go that high
+	if (Long.MAX_VALUE - a - b < 0) return -1;
+																			
+	return (a + b) % n;
+}
+																			
+public static long mulmod_java (long a, long b, long n)
+{
+	return (a * b) % n;
+}
+																			
+public static long mulmod (long a, long b, long n)
+{
+	long a_doubled;
+																			
+	if (b == 0) return 0; // a * 0 = 0 %n
+																			
+	a_doubled = addmod_java (a, a, n);
+																			
+	if (a_doubled < 0) return -1;
+																			
+	if ((b & 1) == 0)
+	{
+		return mulmod (a_doubled, b >>> 1, n);
+	}
+	else
+	{
+		return addmod_java (a, mulmod (a_doubled, b >>> 1, n), n);
+	}
+}]]></programlisting>
+		<para>The question next asks for the largest value of n for which <literal>mulmod (a, b, n)</literal> is correct, given <literal>0 &#8804; a, b &#8804; n - 1</literal>. Obviously, the most challenging situation is when the largest product possible is reached: in other words, when <literal>a = b = n - 1</literal>. The problem is that normally, a product which reaches or exceeds <literal>2<superscript>63</superscript></literal> would overflow the <literal>long</literal> data type, losing data. The <methodname>mulmod</methodname> algorithm circumvents this to a great extent, but does not remove the possibility altogether.</para>
+		<para>Perhaps the easiest way to find the largest possible value of <literal>n</literal> for which the <methodname>mulmod</methodname> method works is brute force. When a negative number is returned, there was obviously an overflow; this is how we know whether a given calculation is valid or not. Unfortunately, we can't just write the entire thing in a <literal>for</literal> loop iterating from <literal>1</literal> to <literal>9223372036854775807</literal> because even on modern computers the program would take longer to run than the age of the universe.</para>
+		<para>The goal is therefore to run <methodname>mulmod</methodname> the fewest times possible. My algorithm is simple: take an iterator of <literal>2<superscript>62</superscript></literal> (approximately halfway up the number line) and try the <methodname>mulmod</methodname> method. If it returns a negative, backtrack and divide the iterator by two, then try again. Therefore the <methodname>mulmod</methodname> method will only be called around a hundred times.</para>
+		<para>The code follows. It accepts a <literal>func</literal> argument, and it works with methods which are only explained in future questions.</para>
+		<programlisting><![CDATA[public static long find_max_n (String func)
+{
+	// func accepts paramaters a, b, n
+	long a, b, n, jump;
+	boolean is_valid;
+																			
+	jump = (long) 1 << 62;
+																			
+	for (n = jump; ; n += jump)
+	{
+		a = b = n - 1;
+																			
+		// {{{ is_valid = (n > 0 && func (a, b, n) >= 0);
+		is_valid = n > 0; // check if n itself exceeds Java's capacity
+																			
+		if (is_valid)
+		{
+			if (func.equals ("mulmod"))
+			{
+				is_valid = mulmod (a, b, n) >= 0;
+			}
+			else if (func.equals ("mulmod_java"))
+			{
+				is_valid = mulmod_java (a, b, n) >= 0;
+			}
+			else if (func.equals ("mulmod_with_addmod"))
+			{
+				is_valid = mulmod_with_addmod (a, b, n) >= 0;
+			}
+			else if (func.equals ("addmod"))
+			{
+				is_valid = addmod (a, b, n) >= 0;
+			}
+			else if (func.equals ("addmod_java"))
+			{
+				is_valid = addmod_java (a, b, n) >= 0;
+			}
+			else if (func.equals ("expmod"))
+			{
+				is_valid = expmod (a, b, n) >= 0;
+			}
+		}
+																			
+		// }}} is_valid
+																			
+		if (is_valid == false)
+		{
+			n -= jump; // backtrack to last known good value
+																			
+			jump >>>= 1;
+																			
+			if (jump == 0) break; // The previous n was indeed the maximum n                                                                                
+			// So loop -- add (old jump)/2 to n and try that.
+		}
+	}
+																			
+	return n;
+}]]></programlisting>
+		<para>And so, the answers:</para>
+		<itemizedlist>
+			<listitem>
+				<para><methodname>mulmod_java</methodname> accepts a maximum <varname>n</varname> of <literal>3037000500</literal> (<varname>a</varname> and <varname>b</varname> are less than the square root of 2<superscript>63</superscript>).</para>
+			</listitem>
+			<listitem>
+				<para><methodname>mulmod</methodname> accepts a maximum <varname>n</varname> of <literal>4611686018427387904</literal> (2<superscript>62</superscript>).</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<!-- }}} End Question 2 -->
+	<!-- {{{ Question 3 -->
+	<sect1 id="question-3">
+		<title>Question 3</title>
+		<para>The question asks for an improvement to the <methodname>addmod_java</methodname> shown in <xref linkend="question-2"/>.</para>
+		<para>The problem with the existing algorithm is that it <literal>a + b</literal> can exceed the maximum value of a <literal>long</literal>. Since <literal>(a + b) % n</literal> can only be equal to either <literal>a + b - n</literal> or <literal>a + b</literal>, it is easy to write a special-case algorithm to optimize <methodname>mulmod</methodname>.</para>
+		<programlisting><![CDATA[public static long addmod (long a, long b, long n)
+{
+	// assume a < n,  b < n, and all three are positive
+																			
+	long result = a - n + b;
+																			
+	if (result >= 0)
+	{
+		return result;
+	}
+	else
+	{
+		return result + n;
+	}
+}]]></programlisting>
+		<para>Then, edit <methodname>mulmod</methodname> to use <methodname>addmod</methodname> in the place of <methodname>addmod_java</methodname>.</para>
+		<programlisting><![CDATA[public static long mulmod_with_addmod (long a, long b, long n)
+{
+	long a_doubled;
+									
+	if (b == 0) return 0; // a * 0 = 0 %n
+									
+	a_doubled = addmod (a, a, n);
+									
+	if ((b & 1) == 0)
+	{
+		// a * b = (2 * a) * (b / 2) % n
+		return mulmod_with_addmod (a_doubled,
+					   b >>> 1,
+					   n);
+	}
+	else
+	{
+		// a * b = a + (2 * a) * ((b - 1) / 2) % n
+		return addmod (a,
+			       mulmod_with_addmod (a_doubled,
+						   b >>> 1,
+						   n),
+			       n);
+	}
+}]]></programlisting>
+		<para>This simple algorithm also speeds up the <methodname>mulmod</methodname> somewhat, since it replaces a costly mod operation with a comparison and two or three additions.</para>
+		<para>The algorithm now extends to the maximum positive value of a <literal>long</literal> integer: that is, <literal>n = 9223372036854775807</literal>.</para>
+	</sect1>
+	<!-- }}} End Question 3 -->
+	<!-- {{{ Question 4 -->
+	<sect1 id="question-4">
+		<title>Question 4</title>
+		<para>The <methodname>expmod</methodname> method is even <emphasis>easier</emphasis> to write than the <methodname>mulmod</methodname> method, since it's basically all written already. It just needs a few replacements.</para>
+		<programlisting><![CDATA[public static long expmod (long a, long b, long n)
+{
+	long a_squared;
+									
+	if (b == 0) return 1; // a ^ n = 1 % n
+									
+	a_squared = mulmod_with_addmod (a, a, n);
+									
+	if ((b & 1) == 0)
+	{
+		// a ^ b = (a ^ 2) ^ (b / 2)
+		return expmod (a_squared, b >>> 1, n);
+	}
+	else
+	{
+		// a ^ b = a * (a ^ 2) ^ ((b - 1) / 2)
+		return mulmod_with_addmod (a,
+					   expmod (a_squared,
+						   b >>> 1,
+						   n),
+					   n);
+	}
+}]]></programlisting>
+		<para>Given <varname>a</varname> = <literal>1274434408442</literal>, <varname>b</varname> = <literal>589394265617</literal>, and <varname>n</varname> = <literal>1606818609763</literal>, the resultant (<varname>c</varname>) is <literal>308250308250</literal> (notice the pattern in the digits: it's our course number repeated twice). Calling the method again with given parameters <literal>308250308250</literal> (<varname>c</varname>), <literal>433371342353</literal> (<varname>d</varname>), and <literal>1606818609763</literal> (<varname>n</varname>) gives the answer <literal>1274434408442</literal> (this number is actually <varname>a</varname> from above).</para>
+	</sect1>
+	<!-- }}} End Question 4 -->
+	<!-- {{{ Code -->
+	<sect1 id="code">
+		<title>Code</title>
+		<sect2>
+			<title><filename>basis.java</filename></title>
+			<para>All program listings from the preceding sections were placed in the file <ulink url="../basis.java"/>. Each of the following classes extends the <classname>basis</classname> class, adding a front-end.</para>
+		</sect2>
+		<sect2>
+			<title><filename>q1.java</filename></title>
+			<programlisting><![CDATA[public class q1 extends basis
+{
+	public static void main(String[] argv)
+	{
+		long a, b;
+
+		if (argv.length != 2)
+		{
+			System.err.println ("usage: q1 [multiplier]"+
+					    " [multiplicand]");
+			return;
+		}
+
+		a = Long.parseLong (argv[0]);
+		b = Long.parseLong (argv[1]);
+
+		System.out.println (a + " * " + b + " = " +
+				    mulalarusse (a, b));
+	}
+}]]></programlisting>
+			<para>The program in <ulink url="../q1.java"/> is a simple program to multiply two numbers. It requires two arguments, representing the two (<literal>long</literal>) numbers to be multiplied. For example:</para>
+			<screen><prompt>$ </prompt><userinput>java q1 35 -143</userinput>
+<computeroutput>35 * -143 = -5005</computeroutput></screen>
+		</sect2>
+		<sect2>
+			<title><filename>q2.java</filename></title>
+			<programlisting><![CDATA[public class q2 extends basis
+{
+	public static void main(String[] argv)
+	{
+		long n;
+
+		if (argv.length != 1)
+		{
+			System.err.println ("usage: q2 [-m] [-j] [-a]");
+			return;
+		}
+
+		if (argv[0].equals ("-m"))
+		{
+			n = find_max_n ("mulmod");
+			System.out.println ("Largest value of n with"
+					    + " mulmod: " + n);
+			return;
+		}
+
+		if (argv[0].equals ("-j"))
+		{
+			n = find_max_n ("mulmod_java");
+			System.out.println ("Largest value of n with"
+					    + " mulmod_java: " + n);
+			return;
+		}
+
+		if (argv[0].equals ("-a"))
+		{
+			n = find_max_n ("mulmod_with_addmod");
+			System.out.println ("Largest value of n with"
+					    + " mulmod_with_addmod: " + n);
+			return;
+		}
+
+		System.err.println ("usage: q2 [-m] [-j] [-a]");
+	}
+}]]></programlisting>
+			<para>The program in <ulink url="../q2.java"/> finds the maximum valid <varname>n</varname>, as described in <xref linkend="question-2"/>. If called with the <literal>-m</literal> argument, it will test the <methodname>mulmod</methodname> method. If called with the <literal>-j</literal> argument, it will test the <methodname>mulmod_java</methodname> method. If called with the <literal>-a</literal> method, it will test the <methodname>mulmod_with_addmod</methodname> method from <xref linkend="question-3"/>. For example:</para>
+			<screen><prompt>$ </prompt><userinput>java q2 -j</userinput>
+<computeroutput>Largest value of n with mulmod_java: 3037000500</computeroutput>
+<prompt>$ </prompt><userinput>java q2 -m</userinput>
+<computeroutput>Largest value of n with mulmod: 4611686018427387904</computeroutput>
+<prompt>$ </prompt><userinput>java q2 -a</userinput>
+<computeroutput>Largest value of n with mulmod_with_addmod: 9223372036854775807</computeroutput></screen>
+			<para>Note that this program covers both <xref linkend="question-2"/> and <xref linkend="question-3"/>.</para>
+		</sect2>
+		<sect2>
+			<title><filename>q4.java</filename></title>
+			<programlisting><![CDATA[public class q4 extends basis
+{
+	public static void main (String[] argv)
+	{
+		long a, b, c, d, e, n;
+
+		a = 1274434408442L;
+		b = 589394265617L;
+		n = 1606818609763L;
+
+		System.out.println ("a: " + a);
+		System.out.println ("b: " + b);
+		System.out.println ("n: " + n);
+
+		System.out.println ("c = (a ^ b) % n");
+		c = expmod (a, b, n);
+		System.out.println ("c: " + c);
+
+		d = 433371342353L;
+
+		System.out.println ("d: " + d);
+
+		System.out.println ("e = (c ^ d) % n");
+		e = expmod (c, d, n);
+		System.out.println ("e: " + e);
+	}
+}]]></programlisting>
+			<para>The program in <ulink url="../q4.java"/> goes through the question and prints its progress.</para>
+			<screen><prompt>$ </prompt><userinput>java q4</userinput>
+<computeroutput>a: 1274434408442
+b: 589394265617
+n: 1606818609763
+c = (a ^ b) % n
+c: 308250308250
+d: 433371342353
+e = (c ^ d) % n
+e: 1274434408442</computeroutput>
+</screen>
+		</sect2>
+	</sect1>
+	<!-- }}} End Code -->
+</article>

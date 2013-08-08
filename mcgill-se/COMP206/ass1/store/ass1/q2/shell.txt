@@ -1,0 +1,19 @@
+Windows
+
+Windows doesn't have many shells available by default. When it is booted, it loads explorer.exe, the graphical shell. It has a Start menu and displays folders as windows. For the most part, "commands" are represented by mouse clicks to explorer.exe's icons and menus. Explorer usually displays errors in the form of dialog boxes; sometimes it pops a small notification in the lower-right of the screen. The entire desktop can be customized with themes, which change colours and shapes of window borders and decorations. The graphical shell is advantageous because it is straightforward to keep track of multiple programs at once: each is confined to its own window. However, this advantage also creates problems: applications can hide each other, and applications can rely too heavily on the mouse, slowing down the user.
+
+From explorer.exe, one can run cmd.exe, the command-line shell. It is a clone of DOS. Interaction is done through text: the user types in a line of text, and cmd.exe responds with text. Errors are returned as text. The shell's customization is extremely limited; only a few registry hacks are available to change the shell's behavior, such as enabling a rudimentary form of tab-completion of filenames. The shell's appearance is also restricted: there is an interface to change scrollback buffer size, copy/paste mode, width and height.
+
+Cmd.exe can also run batch (".bat") scripts, which string together several commands.
+
+Cmd.exe is advantageous in its simplicity. You just type a command and get an answer. It's also sometimes easier to program without worrying about a GUI; cmd.exe allows you to run such programs. (The Windows 2000 Resource Kit contains a slew of them.) The downsides of cmd.exe are many: for starters, it is difficult to remember program names; its only feature to help the user type faster is a half-functional tab-completion mechanism; and it can't even be resized horizontally.
+
+UNIX
+
+UNIX systems are host to innumerable shells. Ash, bash, csh, dash, es, esh, ksh, rc, sash, sh, tcsh, zsh and clones of these shells all behave rather similarly. They accept commands as lines of text and return text as responses (errors or otherwise). They allow a varying amount of flexibility in terms of syntax capabilities (all of them easily surpass cmd.exe from a flexibility standpoint). They can all be customized using login scripts, though these script filenames vary from shell to shell. Their advantages: they are powerful scripting languages; some offer helpful features such as tab-completion; and they give access to nearly every possible thing the computer can do. Their disadvantage: simply put, they're confusing and non-intuitive.
+
+Of course, each of these shells is different from all the rest. Csh and tcsh derive some of their syntax from C, for instance. By far the most prevalent in modern shell scripting is regular sh, the Bourne Shell. Each shell has its place.
+
+Naturally, there are also graphical shells for UNIX. Their behavior is similar to that of Windows Explorer; the most common are the GNOME and KDE desktop environments, which are composed of graphical shells and sets of programs to accompany them.
+
+The default shell on mimi.cs.mcgill.ca is tcsh. I created a .tcshrc which does the requested actions; I've named it "tcshrc" so that it is visible in this directory.

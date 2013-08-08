@@ -1,0 +1,23 @@
+> (load "q4.scm")
+> (define empty-set (set-comprehend (lambda (x) #f)))
+> (define universal-set (set-comprehend (lambda (x) #t)))
+> (define greater-than-maker (lambda (n) (set-comprehend (lambda (m) (and (number? m) (> m n))))))
+> (define greater-than-5 (greater-than-maker 5))
+> (set-member? 7365 empty-set)
+#f
+> (set-member? 'x universal-set)
+#t
+> (set-member? 3 (set-comprehend number?))
+#t
+> (set-member? 'b (set-comprehend number?))
+#f
+> (set-member? 3 greater-than-5)
+#f
+> (set-member? 7 greater-than-5)
+#t
+> (set-member? 'b greater-than-5)
+#f
+> (set-member? '7 (set-union (greater-than-maker 5) (set-complement (greater-than-maker 57))))
+#t
+> (set-member? '7 (set-intersection (greater-than-maker 5) (set-complement (greater-than-maker 57))))
+#t

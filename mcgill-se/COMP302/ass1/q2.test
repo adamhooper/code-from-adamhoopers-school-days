@@ -1,0 +1,19 @@
+> (load "q2.scm")
+> (survives? 1 9)
+#t
+> (survives? 2 9)
+#f
+> (survives? 3 9)
+#f
+> (survives? 4 9)
+#f
+> (survives? 5 9)
+#f
+> (survives? 6 9)
+#f
+> (survives? 7 9)
+#t
+> (survives? 8 9)
+#f
+> (survives? 9 9)
+#f

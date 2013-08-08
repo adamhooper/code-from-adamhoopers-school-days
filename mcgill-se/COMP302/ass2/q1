@@ -1,0 +1,30 @@
+a)
+
+The grammar is ambiguous because "1 + 2 * 3" has two different leftmost
+derivations. It can be derived like this:
+
+<expr>
+<expr> * <expr>
+<expr> + <expr> * <expr>
+1 + <expr> * <expr>
+1 + 2 * <expr>
+1 + 2 * 3
+
+And like this:
+
+<expr>
+<expr> + <expr>
+1 + <expr>
+1 + <expr> * <expr>
+1 + 2 * <expr>
+1 + 2 * 3
+
+b)
+
+The second derivation corresponds to the proper mathematical order of
+operations, i.e., "1 + (2 * 3)", while the first can be thought of as
+"(1 + 2) * 3" since the "<expr> + <expr>" is substituted into the first
+"<expr>" of "<expr> * <expr>" -- if parentheses were used, this could be
+interpreted as "(<expr> + <expr>) * <expr>".
+
+(To remove the ambiguity in the BNF, parentheses (or similar) would be needed.)

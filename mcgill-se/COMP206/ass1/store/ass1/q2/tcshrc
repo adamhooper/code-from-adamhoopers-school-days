@@ -1,0 +1,16 @@
+set prompt="%n@%m %~ $ "
+
+echo Your current directory is $PWD
+
+echo The current date is `date`
+
+echo The following users are logged on:
+who
+
+echo My best friend doesn't have an account here, but here's
+echo information on a good friend of mine:
+finger osandu
+
+alias lsa "ls -l -a"
+
+mutt

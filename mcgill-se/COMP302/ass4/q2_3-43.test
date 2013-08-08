@@ -1,0 +1,11 @@
+> (load "q2_3-43.scm")
+> (read-eval-print)
+--> let a = 3 b = 4 swap = proc(x,y) let temp = deref(x) in begin setref(x,deref(y));setref(y,temp) end in begin (swap ref a ref b);-(a,b) end
+1
+--> let a = 3 in begin setref(ref a, 4); a end
+4
+--> let a = 3 b = 4 swap = proc(x,y) let temp = deref(x) in begin setref(x,deref(y)); setref(y,temp) end in begin (swap a b); a; b end
+case: not a reference: 3
+> (read-eval-print)
+--> let a = 3 b = 4 swap = proc(x,y) let temp = deref(x) in begin setref(x,deref(y)); setref(y,temp) end in begin (swap ref a ref b); a; b end
+3

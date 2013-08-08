@@ -1,0 +1,18 @@
+> (load "q4_3-12.scm")
+> (read-eval-print)
+--> list(1,2,3)
+(1 2 3)
+--> car(cons(4,emptylist))
+4
+--> cdr(cons(3,emptylist))
+()
+--> car(cdr(list(1,2,3,4,5)))
+2
+--> car(cdr(cdr(list(1,2,3,4,5))))
+3
+--> null?(list(1))
+0
+--> null?(emptylist)
+1
+--> null?(cdr(cdr(list(1,2))))
+1

@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ECSE221 Assignment 1</title><link rel="stylesheet" href="style.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.64.1" /></head><body><div class="article" lang="en" xml:lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="id2400090"></a>ECSE221 Assignment 1</h1></div><div><div class="author"><h3 class="author"><span class="firstname">Adam</span> <span class="surname">Hooper</span></h3><div class="affiliation"><div class="address"><p><br />
+					<span class="otheraddr">McGill ID: 260055737</span><br />
+					<tt class="email">&lt;<a href="mailto:adam.hooper@mail.mcgill.ca">adam.hooper@mail.mcgill.ca</a>&gt;</tt><br />
+				</p></div></div></div></div></div><div></div><hr /></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#id2438625">Question 1</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2438732">Question 1 Tests</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2438756">Question 2</a></span></dt><dt><span class="sect1"><a href="#id2438820">Tests</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2438625"></a>Question 1</h2></div></div><div></div></div><p>We are asked to write a C program that computes the sum of two unsigned decimal numbers of up to 20 digits in length, using nothing but <tt class="literal">char</tt>s.</p><p>Instead of converting from decimal to binary, adding, and converting back to decimal after, I decided to do decimal addition  “<span class="quote">by hand</span>”, as it were. Also, since it's hardly any extra effort, I decided to make it work for two strings of any length (using <tt class="function">calloc</tt> to dynamically allocate memory for the return value). My code follows:</p><pre class="programlisting">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+/* Evaluates a and b more than once */
+#define max(a,b) ((a) &gt; (b) ? (a) : (b))
+
+char *
+my_add (char *i1,
+	char *i2)
+{
+	char *ret, *ret_p;
+	char *i1_p = i1;
+	char *i2_p = i2;
+	char len;
+	char carry = 0;
+	char sum;
+
+	while (*i1_p) ++i1_p;
+	while (*i2_p) ++i2_p;
+
+	len = 1 + max (i1_p - i1, i2_p - i2); /* 1 for potential carry */
+
+	ret = calloc (len + 1, sizeof (char)); /* 1 for NULL */
+
+	ret_p = ret + len;
+
+	while (--ret_p &gt;= ret)
+	{
+		sum = 0;
+
+		if (carry)
+		{
+			sum += carry;
+			carry = 0;
+		}
+
+		if (--i1_p &gt;= i1)
+		{
+			sum += *i1_p - '0';
+		}
+
+		if (--i2_p &gt;= i2)
+		{
+			sum += *i2_p - '0';
+		}
+
+		if (sum &gt; 9)
+		{
+			carry = 1;
+			sum -= 10;
+		}
+
+		*ret_p = sum + '0';
+	}
+
+	return ret;
+}
+
+int
+main (int argc,
+      char **argv)
+{
+	char *sum;
+	char *p;
+
+	if (argc != 3)
+	{
+		fprintf (stderr, "usage: %s [number] [number]\n", argv[0]);
+		return 1;
+	}
+
+	p = sum = my_add(argv[1], argv[2]);
+
+	while (*p == '0')
+	{
+		p++;
+	}
+
+	printf ("%s + %s = %s\n", argv[1], argv[2], p);
+
+	free (sum);
+
+	return 0;
+}
+</pre><p>Basically, the program calculates the maximum length of the string to return, and fills in the numbers from right to left. It computes one digit at a time: the rightmost digits of <tt class="varname">i1</tt> and <tt class="varname">i2</tt> determine the rightmost digit of <tt class="varname">ret</tt> and <tt class="varname">carry</tt>; after which the second-rightmost digits of both <tt class="varname">i1</tt> and <tt class="varname">i2</tt> and <tt class="varname">carry</tt> determine the second-rightmost digit of <tt class="varname">ret</tt> and a new value for <tt class="varname">carry</tt>, and so on. Once <tt class="varname">i1_p</tt> travels to the left of the first digit in <tt class="varname">i1</tt>, <tt class="varname">i1</tt> has been completely added to <tt class="varname">ret</tt>; same goes for <tt class="varname">i2</tt>.</p><p>The <tt class="function">main</tt> function skips past any leading <tt class="literal">0</tt>'s in <tt class="function">my_add</tt>'s return value and prints the result.</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2438732"></a>Question 1 Tests</h3></div></div><div></div></div><p>For testing, I chose to build a small Python program with some tests. Python makes it easy because it, too, can do arbitrary-length addition (much better than my above answer, too). I wrote a simple program that adds two numbers with Python, adds two numbers with my program, and compares the output of the two.</p><pre class="programlisting">#!/usr/bin/env python
+
+import commands
+
+tests = [[12345678900987654321, 92837492036573827837],
+	 [1, 1],
+	 [99999999999999999999, 0],
+	 [1, 99999999999999999999],
+	 [55555555554444444444, 44444444445555555555],
+	 [55555555554444444444, 44444444445555555556],
+	 [99999999999999999999, 99999999999999999999],
+	 [15, 4],
+	 [1, 1],
+	 [67236346282364, 99127361237881],
+	]
+
+for test in tests:
+	a = test[0]
+	b = test[1]
+
+	expected_result = str(a + b)
+
+	cmd = "./q1.exe %d %d" % (a, b)
+
+	# "%s + %s = %s"
+	real_result = commands.getoutput(cmd)
+
+	# Change that to a single string
+	real_result = real_result.split()[-1]
+
+	if (real_result == expected_result):
+		print "Success adding %d and %d" % (a, b)
+	else:
+		print "FAILURE adding %d and %d" % (a, b)
+</pre></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2438756"></a>Question 2</h2></div></div><div></div></div><p>Question 2 asks for a C function which computes the product of two <tt class="literal">long</tt> numbers. In binary, this can be done with additions, comparisons and bit-shifts. To avoid confusion, I made both the <tt class="varname">multiplier</tt> and the <tt class="varname">multiplicand</tt> positive numbers, and changed the sign at the end of the function if necessary.</p><p>The algorithm is straightforward, and is much clearer in code than in words.</p><p>Next we were asked to write a suitable test program, which I put in the <tt class="function">main</tt> function. Besides the key numbers around the square root of <tt class="constant">LONG_MAX</tt> or its negative and the apparent special cases <tt class="literal">0</tt> and <tt class="literal">±1</tt>, there are no numbers worth worrying about. I put in a bunch of random ones, and compared the results of <tt class="function">product</tt> to the results obtained by the C <tt class="literal">*</tt> operator.</p><pre class="programlisting">#include &lt;stdio.h&gt;
+#include &lt;limits.h&gt;
+
+#define is_positive(i) (((i) &amp; 0x80000000) ? 0 : 1)
+#define array_num_elements(arr) (sizeof (arr) / sizeof (arr[0]))
+
+typedef struct
+{
+	long multiplier;
+	long multiplicand;
+	long product;
+	int result;
+} Test;
+
+static Test tests[] =
+{
+	{ 1L,		1L,		1L,		0	},
+	{ 46340L,	46341L,		2147441940L,	0	},
+	{ 46341L,	46341L,		0L,		-1	},
+	{ 0L,		LONG_MAX,	0L,		0	},
+	{ 1L,		LONG_MAX,	LONG_MAX,	0	},
+	{ 2L,		LONG_MAX,	0L,		-1	},
+	{ -1L,		LONG_MAX,	-2147483647L,	0	},
+	{ 0L,		0L,		0L,		0	},
+	{ 46340L,	-46341L,	-2147441940L,	0	},
+	{ LONG_MAX,	-1L,		-2147483647L,	0,	},
+};
+static const int num_tests = array_num_elements (tests);
+
+int
+product (long multiplier,
+	 long multiplicand,
+	 long *product)
+{
+	char is_negative = 0; /* 0: positive, 1: negative */
+	*product = 0;
+
+	/* Deal with the sign -- make multiplier &amp; multiplicand positive */
+	if (is_positive (multiplier) != is_positive (multiplicand))
+	{
+		is_negative = 1;
+	}
+	if (!is_positive (multiplier))
+	{
+		multiplier = -multiplier;
+	}
+	if (!is_positive (multiplicand))
+	{
+		multiplicand = -multiplicand;
+	}
+
+	/* Perform the multiplication (on positive numbers) */
+	while (multiplier != 0)
+	{
+		/* printf ("a: %ld, b: %ld\n", multiplier, multiplicand); */
+
+		/* Has multiplicand overflowed? */
+		if (!is_positive (multiplicand)) return -1;
+
+		if (multiplier &amp; 1)
+		{
+			/* Will this addition overflow? */
+			if (LONG_MAX - *product &lt; multiplicand) return -1;
+
+			*product += multiplicand;
+		}
+
+
+		multiplier &gt;&gt;= 1;
+		multiplicand &lt;&lt;= 1;
+	}
+
+	if (is_negative)
+	{
+		*product = -*product;
+	}
+
+	return 0;
+}
+
+void
+run_test (long multiplier,
+	  long multiplicand,
+	  long expected_product,
+	  int expected_result)
+{
+	long test_product;
+	int test_result;
+
+	test_result = product (multiplier, multiplicand, &amp;test_product);
+
+	if (test_result != expected_result)
+	{
+		printf ("FAILURE on %ld * %ld\n",
+			multiplier, multiplicand);
+
+		return;
+	}
+
+	/* Check that test_product is valid */
+	/* By now, we know test_result is */
+
+	if (test_result == -1 || test_product == expected_product)
+	{
+		printf ("Success on %ld * %ld\n",
+			multiplier, multiplicand);
+	}
+	else
+	{
+		printf ("FAILURE on %ld * %ld\n",
+			multiplier, multiplicand);
+	}
+}
+
+int
+main (int argc,
+      char **argv)
+{
+	unsigned int i;
+
+	for (i = 0; i &lt; num_tests; i++)
+	{
+		run_test (tests[i].multiplier, tests[i].multiplicand,
+			  tests[i].product, tests[i].result);
+	}
+
+	return 0;
+}
+</pre></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2438820"></a>Tests</h2></div></div><div></div></div><p>After building all these programs, I wrote a Makefile to automate the tests.</p><pre class="programlisting">test: q1.out q2.out
+	@grep FAILURE $+ || echo "No errors found."
+
+clean:
+	rm -f *.out *.exe
+
+%.exe: %.c
+	gcc -Wall -g $&lt; -o $@
+
+q2.out: q2.exe
+	exec ./$&lt; &gt; $@
+
+q1.out: test-q1.py q1.exe
+	exec ./$&lt; &gt; $@
+</pre><p>After creating this file, I run <span><b class="command">make</b></span> and it will print all my errors. Below are the outputs of my two sets of tests.</p><pre class="screen">Success adding 12345678900987654321 and 92837492036573827837
+Success adding 1 and 1
+Success adding 99999999999999999999 and 0
+Success adding 1 and 99999999999999999999
+Success adding 55555555554444444444 and 44444444445555555555
+Success adding 55555555554444444444 and 44444444445555555556
+Success adding 99999999999999999999 and 99999999999999999999
+Success adding 15 and 4
+Success adding 1 and 1
+Success adding 67236346282364 and 99127361237881
+</pre><pre class="screen">Success on 1 * 1
+Success on 46340 * 46341
+Success on 46341 * 46341
+Success on 0 * 2147483647
+Success on 1 * 2147483647
+Success on 2 * 2147483647
+Success on -1 * 2147483647
+Success on 0 * 0
+Success on 46340 * -46341
+Success on 2147483647 * -1
+</pre></div></div></body></html>

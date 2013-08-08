@@ -1,0 +1,11 @@
+> (load "q1_2-20.scm")
+> (define dxy-env (extend-env '(d x) '(6 7) (extend-env '(y) '(8) (empty-env))))
+> (apply-env dxy-env 'x)
+7
+> (define xdxy-env (extend-env '(x) '(3) dxy-env))
+> (apply-env xdxy-env 'x)
+3
+> (apply-env dxy-env 'x)
+7
+> (apply-env xdxy-env 'd)
+6

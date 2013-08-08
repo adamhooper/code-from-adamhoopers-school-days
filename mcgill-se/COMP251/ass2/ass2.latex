@@ -1,0 +1,251 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{fullpage}
+\usepackage{clrscode}
+
+\begin{document}
+
+\title{COMP251 Assignment 2}
+\author{Adam Hooper\\
+	260055737}
+\date{February 15, 2005}
+\maketitle
+
+\section*{1. Exercise 8.3-4}
+
+We are asked to show how to sort $n$ integers in the range $\left[0 \twodots n^2 - 1\right]$ in $O(n)$ time.
+
+This is a the perfect place to use \proc{Radix-Sort}. Integers under $n^2$ take at most $\lg n^2 = 2 \lg n$ bits of storage. Using a radix of $r = \lg n$, we can guarantee linear sort time by Lemma 8.4:
+
+\begin{quotation}
+Given $n$ $b$-bit numbers and any positive integer $r \le b$, \proc{Radix-Sort} correctly sorts these numbers in $\Theta\left((b/r)(n+2^r)\right)$ time.
+\end{quotation}
+
+In this particular problem, $r = \lg n$, and $b = 2 \lg n$. The running time thus becomes $\Theta\left(\frac{2 \lg n}{\lg n}\left(n + 2^{\lg n}\right)\right) = \Theta\left(2\left(n + n\right)\right) = \Theta(n)$.
+
+\section*{2. Problem 8.4}
+
+\subsection*{a. $\Theta(n^2)$ comparisons}
+
+To pair up the jugs in $\Theta(n^2)$ time, we simply have to compare all red jugs with all blue jugs. Assuming red jugs are in the array $R[1 \twodots n]$ and blue jugs are in the array $B[1 \twodots n]$, the following algorithm will work. (The algorithm will reorder $B$ to contain jugs in the same order as in $A$.)
+
+Note that this algorithm is almost identical to \proc{Insertion-Sort}.
+
+\begin{codebox}
+\Procname{$\proc{Pair-Jugs-Simple}(R, B)$}
+\li \For $i \gets 1$ \To $length[R]$
+\li   \Do
+	\For $j \gets i$ \To $length[B]$
+\li	  \Do
+	    \If $\proc{Compare}(R[i], B[j]) = 0$
+\li	      \Do
+		exchange $B[i] \leftrightarrow B[j]$
+	      \End
+	  \End
+      \End
+\end{codebox}
+
+\subsection*{b. Prove lower bound of $\Omega(n \lg n)$ comparisons}
+
+This proof is identical to the proof we performed in class that any sorting algorithm cannot have a running time better than $\Omega(n \lg n)$:
+
+\begin{itemize}
+\item Any sorting algorithm must be able to permute the input values in all possible ways.
+\item Two distinct input sequences (``sequence'' meaning ordering of $B$ from smallest to largest) transformed by the same permutation will result in two distinct output sequences. Therefore each distinct input sequence must have its own associated permutation.
+\item Any sorting algorithm must be able to sort any of the $n!$ possible input sequences. This will require at least $n!$ leaves on its decision tree.
+\item As proven in class, any binary tree of height $h$ has at most $2^h$ leaves. So if $l$ is the number of leaves on the decision tree, $\lg l \le h$.
+\item $n! > \left(\frac{n}{e}\right)^n$ (Stirling's Formula). So $h \ge \lg n! > \lg \left(\frac{n}{e}\right)^n = n \lg n - n \lg e = \Omega(n \lg n)$.
+\end{itemize}
+
+\subsection*{c. Randomized algorithm with expected $O(n \lg n)$ comparisons}
+
+Just as the earlier algorithm emulated \proc{Insertion-Sort}, the following algorithm emulates \proc{Randomized-Quicksort}. As a side-effect, it reorders $R$ at the same time as reordering $B$.
+
+\begin{codebox}
+\Procname{$\proc{Pair-Jugs-Partition}(R, B, p, r)$}
+\li $i \gets p - 1$
+\li \For $j \gets p$ \To $r - 1$
+\li   \Do
+	\If $\proc{Compare}(B[j], R[r]) \le 0$
+\li	  \Then
+	    $i \gets i + 1$
+\li	    exchange $B[i] \leftrightarrow B[j]$
+	  \End
+      \End
+\li exchange $R[i + 1] \leftrightarrow R[r]$
+\li \Return $i + 1$
+\end{codebox}
+
+\begin{codebox}
+\Procname{$\proc{Pair-Jugs-Partition-Random}(R, B, p, r)$}
+\li $i \gets \proc{Random}(p, r)$
+\li exchange $R[r] \leftrightarrow R[i]$
+\li \For $i \gets p$ \To $r - 1$
+\li   \Do
+	\If $\proc{Compare}(B[i], R[r]) = 0$
+\li	  \Do
+	    exchange $B[i] \leftrightarrow B[r]$ \>\>\>\>\>\>\> \Comment Make $B$'s partition the same as $R$'s
+	  \End
+      \End
+\li $\proc{Pair-Jugs-Partition}(R, B, p, r)$
+\li \Return $\proc{Pair-Jugs-Partition}(B, R, p, r)$ \>\>\>\>\>\>\>\>\>\>\> \Comment Will return same value as previous line
+\end{codebox}
+
+\begin{codebox}
+\Procname{$\proc{Pair-Jugs-Quick}(R, B, p, r)$}
+\li \If $p < r$
+\li   \Then $q \gets \proc{Pair-Jugs-Partition-Random}(R, B, p, r)$
+\li	$\proc{Pair-Jugs-Quick}(R, B, p, q - 1)$
+\li	$\proc{Pair-Jugs-Quick}(R, B, q + 1, r)$
+      \End
+\end{codebox}
+
+Sorting two arrays at once is obviously more complicated than sorting a single array. However, using \proc{Quicksort}'s logic we are assured that the algorithm works, because \proc{Pair-Jugs-Partition} works. Both arrays have the same number of jugs smaller than the partition element; running \proc{Pair-Jugs-Partition} with the arrays swapped will position the partition element at the same point in both arrays. And since the partition point is in the correct place, we know that all elements before $R[i]$ will be less than $B[i]$ and all elements before $B[i]$ will be less than $R[i]$. Enough symmetry is thus preserved.
+
+Proving the algorithm's expected running time of $O(n \lg n)$ is trivial since we already know that \proc{Randomized-Quicksort} runs in $O(n \lg n)$ time. All we need to prove is that \proc{Pair-Jugs-Partition-Random} runs in $O(n)$ time. Since the first part (placing the partition point) iterates over each element once for $O(n)$ time, and since \proc{Pair-Jugs-Partition} (a direct translation of \proc{Quicksort}'s \proc{Partition}) runs in $O(n)$ time, it is obvious that the entire \proc{Pair-Jugs-Partition-Random} function rung in $O(n)$ time. And since all other functions in the array are directly copied from \proc{Quicksort}, we can rest assured the expected running time is $O(n \lg n)$.
+
+As with \proc{Quicksort}, \proc{Pair-Jugs-Partition-Random}'s worst-case number of comparisons is $O(n^2)$; this is very unlikely to occur in practice, though.
+
+\section*{3. Problem 8-6}
+
+\subsection*{a. $2n$ numbers $\leftrightarrow$ ${2n \choose n}$ possible divisions}
+
+How many $n$-element-long sorted lists can be generated from a $2n$-element-long list? This is pretty much the definition of nCr: ``from $2n$ elements, choose $n$ of them.'' Since the desired list is sorted, each set of $n$ elements can only have one order. After choosing $n$ elements for the first list, the other $n$ elements implicitly make up the second list. Again, since the desired second list is sorted, there can only be one ordering of its elements. So a list of $2n$ numbers can be divided into ${2n \choose n}$ sorted lists of $n$ numbers.
+
+\subsection*{b. Merge uses at least $2n - o(n)$ comparisons}
+
+The decision tree for \proc{Merge} must be able to merge any two sorted lists. As shown above, there are ${2n \choose n}$ possible methods to pick two $n$-element lists from a $2n$-element list; to reverse this procedure, \proc{Merge}'s decision tree must have at least $l = {2n \choose n}$ leaves. Using the formula $h \ge \lg l$, we can determine the minimum height of the decision tree, which is also the minimum number of comparisons.
+
+Stirling's formula, $n! = \sqrt{2\pi n} \left(\frac{n}{e}\right)^n \left(1 + \Theta \left(\frac{1}{n}\right)\right)$, is used in these calculations.
+
+\begin{eqnarray*}
+h &\ge& \lg l \\
+  &\ge& \lg {2n \choose n} \\
+  &\ge& \lg \left(\frac{(2n)!}{(n!)^2}\right) \\
+  &\ge& \lg\left(\frac{\sqrt{4\pi n}\left(\frac{2n}{e}\right)^{2n}\left(1 + \Theta\left(\frac{1}{2n}\right)\right)}{\left(2\sqrt{2\pi n}\left(\frac{n}{e}\right)^n\left(1 + \Theta\left(\frac{1}{n}\right)\right)\right)^2}\right) \\
+  &\ge& \lg\left(\frac{1}{2\sqrt{4\pi n}} 2^{2n}\left(\frac{1 + \Theta\left(\frac{1}{2n}\right)}{\left(1 + \Theta\left(\frac{1}{n}\right)\right)^2}\right)\right) \\
+  &\ge& 2n - \lg\left(4\sqrt{\pi n}\right) + \lg\left(\frac{1 + \Theta\left(\frac{1}{2n}\right)}{1 + 2\Theta\left(\frac{1}{n}\right) + \Theta\left(\frac{1}{n}\right)^2}\right) \\
+  &\ge& 2n - \lg\left(4\sqrt{\pi n}\right) + 0 \mbox{ as $n \to \infty$} \\
+\end{eqnarray*}
+
+The large last $\lg$ was removed to abbreviate the following step, in which it is easy to see it would go to $0$ anyway.
+
+Next, we need to prove that $\lg\left(4\sqrt{\pi n}\right) = o(n)$:
+
+\begin{eqnarray*}
+\lim_{n \to \infty}\frac{\lg\left(4\sqrt{\pi n}\right)}{n}
+ &=& \lim_{n \to \infty}\frac{2 + \frac{1}{2}\lg \pi + \frac{1}{2}\lg n}{n} \\
+ &=& 0
+\end{eqnarray*}
+
+Thus, we have proven that $h = 2n - o(n)$, and so at most $2n - o(n)$ comparisons must be made in the \proc{Merge} algorithm.
+
+\subsection*{c. Requirements for two elements to be compared}
+
+If two elements are in consecutive order from opposite lists, they must be compared. This can be explained by cases. In the following examples, $A$ is the first sorted half-list and $B$ is the second; $a$ is \proc{Merge}'s index into $A$ and $b$ is \proc{Merge}'s index into $B$. $C$ is the target list.
+
+\begin{itemize}
+\item If $A[a]$ comes before $B[b]$ but not directly before it, then elements $A[a .. i - 1]$ will be moved into list $C$, for some value of $i$. This will leave $A[i]$ in list $A$; $A[i]$ comes directly before $B[b]$ so the consecutive elements $A[i]$ and $B[b]$ will be compared.
+\item If $A[a]$ comes directly before $B[b]$, the two consecutive elements will be compared.
+\item If $A[a]$ comes after $B[b]$, the two above arguments still hold, but with $A$ and $a$ reversed with $B$ and $b$.
+\end{itemize}
+
+Since $a$ and $b$ end up taking all possible values from $1$ to $n$ within \proc{Merge}, the above situations will arise for all possible indices into both arrays. Thus, any two consecutive elements from opposite lists will be compared.
+
+\subsection*{d. Lower bound of $2n - 1$}
+
+We have just proven that any two consecutive terms from opposite lists will be sorted. In other words, \emph{all} consecutive terms from opposite lists will be sorted. There are $2n$ terms in total, and thus $2n - 1$ sets of consecutive terms. Thus $2n - 1$ comparisons must be made.
+
+\section*{4. Exercise 9.3-7}
+
+We are asked for an $O(n)$ algorithm to find the $k$ numbers closest to the median of a set $S$ of $n$ distinct integers.
+
+\begin{codebox}
+\Procname{$\proc{Select-Middle-Numbers}(S, k)$}
+\li $i \gets \lceil \frac{length[S] - k + 1}{2} \rceil$
+\li $\proc{Select}(S, i)$
+\li $T \gets S[i \twodots length[S]]$
+\li $\proc{Select}(T, k)$
+\li \Return $T[1 \twodots k]$
+\end{codebox}
+
+Each of the lines in \proc{Select-Middle-Numbers} run in at most $O(n)$ time, so the entire algorithm runs in $O(n)$ time. The first call to \proc{Select} will partition around the lowest desired number; we don't yet care what that number is. We then place the entire array into $T$, thus discarding all elements smaller than any of the elements we want. We repeat the procedure to discard all elements greater than any of the elements we want. (The temporary array $T$ is necessary: the second call to \proc{Select} could reorder elements positioned in the first call since the groups of $5$ elements are different in both calls to \proc{Select}.)
+
+\section*{5. Problem 9-2}
+
+\subsection*{a. Regular median is a weighted median}
+
+Suppose we look for the weighted median set of $2n$ distinct elements $x_1, x_2, \ldots, x_{2n}$, each with weight $w_i = \frac{1}{2n}$, and we are looking for the (lower) median, $x_n$. Then the two given equations are satisfied:
+
+\begin{eqnarray*}
+\sum_{x_i < x_n} w_i &=& \frac{n - 1}{2n} < \frac{1}{2}
+\end{eqnarray*}
+\begin{eqnarray*}
+\sum_{x_i > x_n} w_i &=& \frac{n}{2n} \le \frac{1}{2}
+\end{eqnarray*}
+
+Similarly, if there are $2n-1$ distinct elements (i.e., an odd number of elements), each has weight $w_i = \frac{1}{2n-1}$ and we are looking for $x_n$. The equations are still satisfied:
+
+\begin{eqnarray*}
+\sum_{x_i < x_n} w_i &=& \frac{n - 1}{2n - 1} < \frac{1}{2}
+\end{eqnarray*}
+\begin{eqnarray*}
+\sum_{x_i > x_n} w_i &=& \frac{n - 1}{2n - 1} \le \frac{1}{2}
+\end{eqnarray*}
+
+\subsection*{b. Compute weighted median using sorting}
+
+This algorithm follows straight from the definition of weighted median. It sorts the list and applies a summation.
+
+\begin{codebox}
+\Procname{$\proc{Weighted-Median-Sorted}(A)$}
+\li $\proc{Heapsort}(A)$
+\li $w \gets 0$
+\li $i \gets 0$
+\li \While $w < \frac{1}{2}$
+\li   \Do
+	$i \gets i + 1$
+\li	$w \gets w + weight[A[i]]$
+      \End
+\li \Return $A[i]$
+\end{codebox}
+
+The sorting runs in $O(n \lg n)$ time. The loop iterates over at most $n$ elements and so runs in $O(n)$ time. Therefore the total running time is $O(n \lg n)$.
+
+\subsection*{c. Use a \proc{Select}-like algorithm}
+
+We know that \proc{Select} works by running \proc{Partition} multiple times. In essence, if \proc{Select} calls \proc{Partition} with the weighted median as input, we will be able to verify the weighted median's validity in $O(n)$ time using the same type of loop as in \proc{Weighted-Median-Sorted}.
+
+The algorithm, \proc{Weighted-Median}, will be a variation of \proc{Select} which does not require an order argument (since we always want to find the median). After each call to \proc{Partition}, a loop like the one in part b will determine whether the pivot in \proc{Partition} was actually the weighted median. If it is the median, \proc{Weighted-Median} will return it. If the sum of all numbers up to and including the pivot is less than $\frac{1}{2}$, \proc{Weighted-Median} will recurse to the right of the pivot. Otherwise, \proc{Weighted-Median} will recurse to the left of the pivot.
+
+The running time of \proc{Weighted-Median} is $O(n)$. This follows from the proof that \proc{Select} is $O(n)$. We are only adding an $O(n)$ step in the algorithm, in the same step as that in which \proc{Partition} is called. Since \proc{Partition} is $O(n)$ and the test for the pivot being the weighted median is also $O(n)$, the entire proof of \proc{Select}'s running time being $O(n)$ remains untouched. So \proc{Weighted-Median}'s running time is $O(n)$.
+
+\subsection*{d. Post-office problem}
+
+To prove the weighted median's appropriateness for the 1-dimensional post-office problem, we need only do the math.
+
+\begin{eqnarray*}
+\sum_{i = 1}^n w_id(p,p_i)
+ &=& \sum_{i = 1}^n w_i\left|p-p_i\right| \\
+ &=& \sum_{i = 1}^n \left|pw_i - p_iw_i\right| \\
+ &=& \sum_{i = 1}^k \left(pw_i - p_iw_i\right) + \sum_{i = k+1}^n \left(p_iw_i - pw_i\right) \\
+ &=& \sum_{i = 1}^k pw_i - \sum_{i = k + 1}^n pw_i + \sum_{i = k + 1}^n p_iw_i - \sum_{i = 1}^k p_iw_i \\
+ &=& p\left(\sum_{i = 1}^k w_i - \sum_{i = k + 1}^n w_i\right) + p_i\left(\sum_{i = k + 1}^n p_iw_i - \sum_{i = 1}^k p_iw_i \right) \\
+\end{eqnarray*}
+
+Both sets of sums depend on $p$, since $k$ depends on $p$.  But there is an interdependence: as the fourth sum ranges over more terms (i.e., $k$ gets larger), 	the first sum also gets larger, by a larger amount (since $p \ge p_i$ for all terms). Same goes for the second and third sums. So there exists an optimal value for which changing $k$ makes the entire sum larger.
+
+The optimum situation will occur when both the first sums are equal (to $\frac{1}{2}$) and cancel each other out. That is, by definition, the weighted median.
+
+\subsection*{e. 2-dimensional post-office}
+
+This question relies upon the same logic as the last. The easiest way to solve it is to again write out the equation:
+
+\begin{eqnarray*}
+\sum_{i = 1}^nw_id(p,p_i)
+ &=& \sum_{i = 1}^nw_i\left(\left|x - x_i\right| + \left|y - y_i\right|\right) \\
+ &=& \sum_{i = 1}^nw_i\left|x-x_i\right| + \sum_{i = 1}^nw_i\left|y-y_i\right|
+\end{eqnarray*}
+
+After this, the exact logic applies as in part d. So the best solution is the set of points $(x, y)$ where $x$ is the weighted median in the first dimension and $y$ is the weighted median in the second.
+
+\end{document}

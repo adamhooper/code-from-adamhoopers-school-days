@@ -1,0 +1,227 @@
+The following is a sample run of the simple heuristic function from Question 1
+(white - "1") facing the Q2Evaluator3 function (black - "0").
+
+ , , , , 
+ , , , , 
+ , , , , 
+ , , , , 
+ , , , , 
+
+Move: 21 (found with depth 7 in 3140ms)
+
+ ,1, , , 
+ , , , , 
+ , , , , 
+ , , , , 
+ , , , , 
+
+Move: 54 (found with depth 6 in 3511ms)
+
+ ,1, , , 
+ , , , , 
+ , , , , 
+ , , , ,0
+ , , , , 
+
+Move: 22 (found with depth 7 in 2068ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+ , , , ,0
+ , , , , 
+
+Move: 24 (found with depth 6 in 3321ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+ ,0, , ,0
+ , , , , 
+
+Move: 25 (found with depth 7 in 1300ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+ ,0, , ,0
+ ,1, , , 
+
+Move: 34 (found with depth 6 in 2612ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+ ,0,0, ,0
+ ,1, , , 
+
+Move: 15 (found with depth 7 in 1158ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+ ,0,0, ,0
+1,1, , , 
+
+Move: 44 (found with depth 6 in 1120ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+ ,0,0,0,0
+1,1, , , 
+
+Move: 14 (found with depth 8 in 2125ms)
+
+ ,1, , , 
+ ,1, , , 
+ , , , , 
+1,0,0,0,0
+1,1, , , 
+
+Move: 12 (found with depth 7 in 1634ms)
+
+ ,1, , , 
+0,1, , , 
+ , , , , 
+1,0,0,0,0
+1,1, , , 
+
+Move: 22S (found with depth 9 in 1896ms)
+
+ ,1, , , 
+0, , , , 
+ ,1, , , 
+1,0,0,0,0
+1,1, , , 
+
+Move: 24N (found with depth 7 in 1035ms)
+
+ ,1, , , 
+0,0, , , 
+ ,0, , , 
+1, ,0,0,0
+1,1, , , 
+
+Move: 25E (found with depth 9 in 2786ms)
+
+ ,1, , , 
+0,0, , , 
+ ,0, , , 
+1, ,0,0,0
+1, ,1, , 
+
+Move: 34N (found with depth 7 in 1738ms)
+
+ ,1, , , 
+0,0, , , 
+ ,0,0, , 
+1, , ,0,0
+1, ,1, , 
+
+Move: 35E (found with depth 8 in 1504ms)
+
+ ,1, , , 
+0,0, , , 
+ ,0,0, , 
+1, , ,0,0
+1, , ,1, 
+
+Move: 44N (found with depth 7 in 1728ms)
+
+ ,1, , , 
+0,0, , , 
+ ,0,0,0, 
+1, , , ,0
+1, , ,1, 
+
+Move: 21W (found with depth 8 in 1599ms)
+
+1, , , , 
+0,0, , , 
+ ,0,0,0, 
+1, , , ,0
+1, , ,1, 
+
+Move: 23W (found with depth 7 in 1680ms)
+
+1, , , , 
+0,0, , , 
+0, ,0,0, 
+1, , , ,0
+1, , ,1, 
+
+Move: 45N (found with depth 8 in 922ms)
+
+1, , , , 
+0,0, , , 
+0, ,0,0, 
+1, , ,1,0
+1, , , , 
+
+Move: 54W (found with depth 7 in 1777ms)
+
+1, , , , 
+0,0, , , 
+0, ,0,0, 
+1, ,0,0, 
+1, , , , 
+
+Move: 11E (found with depth 9 in 1502ms)
+
+ ,1, , , 
+0,0, , , 
+0, ,0,0, 
+1, ,0,0, 
+1, , , , 
+
+Move: 33W (found with depth 7 in 149ms)
+
+ ,1, , , 
+0,0, , , 
+0,0, ,0, 
+1, ,0,0, 
+1, , , , 
+
+Move: 15E (found with depth 9 in 1769ms)
+
+ ,1, , , 
+0,0, , , 
+0,0, ,0, 
+1, ,0,0, 
+ ,1, , , 
+
+Move: 34N (found with depth 5 in 4ms)
+
+ ,1, , , 
+0,0, , , 
+0,0,0,0, 
+1, , ,0, 
+ ,1, , , 
+
+Move: 25N (found with depth 8 in 904ms)
+
+ ,1, , , 
+0,0, , , 
+0,0,0,0, 
+1,1, ,0, 
+ , , , , 
+
+Move: 43E (found with depth 3 in 0ms)
+
+ ,1, , , 
+0,0, , , 
+0,0,0, ,0
+1,1, ,0, 
+ , , , , 
+
+Move: 21E (found with depth 8 in 1217ms)
+
+ , ,1, , 
+0,0, , , 
+0,0,0, ,0
+1,1, ,0, 
+ , , , , 
+
+Move: 44N (found with depth 1 in 0ms)
+Done! Winner is black.

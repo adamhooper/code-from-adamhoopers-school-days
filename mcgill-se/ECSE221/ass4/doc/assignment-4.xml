@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+	<articleinfo>
+		<title>ECSE221 Assignment 4</title>
+
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address>
+					<otheraddr>McGill ID: 260055737</otheraddr>
+					<email>adam.hooper@mail.mcgill.ca</email>
+				</address>
+			</affiliation>
+		</author>
+	</articleinfo>
+	<sect1>
+		<title>C Prototype</title>
+		<para>We were asked to write a program in MIPS assembly which adds two input numbers as strings and prints their sum. Especially since I already did this in Assignment 1, I decided to prototype my assembly program in C.</para>
+		<para>In the question, we were asked to write a function with prototype <code language="C">void addBCD(char *addend, char *augend, char *sum)</code>. This implies that the <literal>sum</literal> pointer would already have memory allocated to it. I decided that it would be easier to allocate memory inside my <function>addBCD</function> function than from the caller, so my C prototype looks slightly different in that respect.</para>
+		<para>I already wrote up how this program works, so I'll copy that from my first assignment:</para>
+		<blockquote>
+			<para>Basically, the program calculates the maximum length of the string to return, and fills in the numbers from right to left. It computes one digit at a time: the rightmost digits of <varname>i1</varname> and <varname>i2</varname> determine the rightmost digit of <varname>ret</varname> and <varname>carry</varname>; after which the second-rightmost digits of both <varname>i1</varname> and <varname>i2</varname> and <varname>carry</varname> determine the second-rightmost digit of <varname>ret</varname> and a new value for <varname>carry</varname>, and so on. Once <varname>i1_p</varname> travels to the left of the first digit in <varname>i1</varname>, <varname>i1</varname> has been completely added to <varname>ret</varname>; same goes for <varname>i2</varname>.</para>
+		</blockquote>
+		<para>Since the input and output methods in SPIM are very different from in C, I didn't bother to prototype them.</para>
+		<para>What follows is the C code I used as a reference.</para>
+		<programlisting><xi:include href="../src/a1q1.c" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+	</sect1>
+	<sect1>
+		<title>Assembly Code</title>
+		<para>I translated my adding code pretty much line-for-line. Instead of using <function>malloc</function> to dynamically allocate memory, I used SPIM's <function>sbrk</function> system call.</para>
+		<para>The input section was obviously all-new, though; and as I mentioned before, it wasn't prototyped in C. I figure it's well-commented enough to explain my every move, though.</para>
+		<para>One thing that slightly annoyed me is that I couldn't think of a simple way to dynamically allocate memory for the input strings. I suppose I could have dynamically grown the strings character-by-character using <function>sbrk</function> to allocate a single byte at a time, but this method didn't appeal to me. Instead, I allocated 1024 bytes per input string. This means that my program can't add 1024-digit or higher numbers. What a shame.</para>
+		<programlisting><xi:include href="../src/adder.asm" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+	</sect1>
+	<sect1>
+		<title>Tests</title>
+		<para>Below is the output from a few of my tests:</para>
+		<screen><prompt>Enter first number: </prompt><userinput>0</userinput>
+<prompt>Enter second number: </prompt><userinput>0</userinput>
+<computeroutput>0 + 0 = 0</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput>0</userinput>
+<prompt>Enter second number: </prompt><userinput>1</userinput>
+<computeroutput>0 + 1 = 1</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput>1</userinput>
+<prompt>Enter second number: </prompt><userinput>1</userinput>
+<computeroutput>1 + 1 = 2</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput>9</userinput>
+<prompt>Enter second number: </prompt><userinput>9</userinput>
+<computeroutput>9 + 9 = 18</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput>9999999999</userinput>
+<prompt>Enter second number: </prompt><userinput>1</userinput>
+<computeroutput>9999999999 + 1 = 10000000000</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput>123456789</userinput>
+<prompt>Enter second number: </prompt><userinput>987654321</userinput>
+<computeroutput>123456789 + 987654321 = 1111111110</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput>1</userinput>
+<prompt>Enter second number: </prompt><userinput>a</userinput>
+<computeroutput>Invalid input</computeroutput>
+
+<prompt>Enter first number: </prompt><userinput></userinput>
+<computeroutput>Invalid input</computeroutput></screen>
+	</sect1>
+</article>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COMP250 Assignment 1</title><link rel="stylesheet" href="style.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.64.1" /></head><body><div class="article" lang="en" xml:lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="id2395547"></a>COMP250 Assignment 1</h1></div><div><div class="author"><h3 class="author"><span class="firstname">Adam</span> <span class="surname">Hooper</span></h3><div class="affiliation"><div class="address"><p><tt class="email">&lt;<a href="mailto:adam.hooper@mail.mcgill.ca">adam.hooper@mail.mcgill.ca</a>&gt;</tt></p></div></div></div></div></div><div></div><hr /></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#question-1">Question 1</a></span></dt><dt><span class="sect1"><a href="#question-2">Question 2</a></span></dt><dt><span class="sect1"><a href="#question-3">Question 3</a></span></dt><dt><span class="sect1"><a href="#question-4">Question 4</a></span></dt><dt><span class="sect1"><a href="#code">Code</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2433496">basis.java</a></span></dt><dt><span class="sect2"><a href="#id2433519">q1.java</a></span></dt><dt><span class="sect2"><a href="#id2433575">q2.java</a></span></dt><dt><span class="sect2"><a href="#id2433689">q4.java</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-1"></a>Question 1</h2></div></div><div></div></div><p>This question was relatively simple: instead of trying to modify the given recursive algorithm, it's much easier to go back to the definition of the multiplication, as it was given in class. Keep a running sum; divide <tt class="literal">b</tt> by two every time <tt class="literal">a</tt> is multiplied by two, and add the remainder to the sum all the time. Once <tt class="literal">b</tt> is <tt class="literal">0</tt>, the sum is the answer.</p><p>Keeping in mind how binary numbers are stored, there's some farther simplification: Instead of just using integer division and multiplication, use bitshifting instead. Not only is it much faster way of dividing or multiplying by two, but the algorithm works perfectly with both positive and negative numbers.</p><p>Below is the program listing.</p><pre class="programlisting">public static long mulalarusse (long a, long b)
+{
+	long result = 0;
+																			
+	while (b != 0)
+	{
+		if ((b &amp; 1) == 1)
+		{
+			result += a;
+		}
+																			
+		a &lt;&lt;= 1;
+		b &gt;&gt;&gt;= 1;
+	}
+																			
+	return result;
+}</pre></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-2"></a>Question 2</h2></div></div><div></div></div><p>First of all, two <tt class="methodname">mulmod</tt> methods must be created: one based on the algorithm given, and another done the most natural way. Call them <tt class="methodname">mulmod_java</tt> and <tt class="methodname">mulmod</tt>, respectively. The latter is an obvious one-liner, and the former is simply a transcription of the given pseudo-code to Java (though bit-shifting was used instead of division and subtraction/division, for simplicity's sake).</p><p>I've included a method called <tt class="methodname">addmod_java</tt>, which simply returns <tt class="literal">(a + b) % n</tt>. This method will be edited in <a href="#question-3" title="Question 3">Question 3</a>.</p><pre class="programlisting">public static long addmod_java (long a, long b, long n)
+{
+	// Return something impossible if Java can't go that high
+	if (Long.MAX_VALUE - a - b &lt; 0) return -1;
+																			
+	return (a + b) % n;
+}
+																			
+public static long mulmod_java (long a, long b, long n)
+{
+	return (a * b) % n;
+}
+																			
+public static long mulmod (long a, long b, long n)
+{
+	long a_doubled;
+																			
+	if (b == 0) return 0; // a * 0 = 0 %n
+																			
+	a_doubled = addmod_java (a, a, n);
+																			
+	if (a_doubled &lt; 0) return -1;
+																			
+	if ((b &amp; 1) == 0)
+	{
+		return mulmod (a_doubled, b &gt;&gt;&gt; 1, n);
+	}
+	else
+	{
+		return addmod_java (a, mulmod (a_doubled, b &gt;&gt;&gt; 1, n), n);
+	}
+}</pre><p>The question next asks for the largest value of n for which <tt class="literal">mulmod (a, b, n)</tt> is correct, given <tt class="literal">0 ≤ a, b ≤ n - 1</tt>. Obviously, the most challenging situation is when the largest product possible is reached: in other words, when <tt class="literal">a = b = n - 1</tt>. The problem is that normally, a product which reaches or exceeds <tt class="literal">2<sup>63</sup></tt> would overflow the <tt class="literal">long</tt> data type, losing data. The <tt class="methodname">mulmod</tt> algorithm circumvents this to a great extent, but does not remove the possibility altogether.</p><p>Perhaps the easiest way to find the largest possible value of <tt class="literal">n</tt> for which the <tt class="methodname">mulmod</tt> method works is brute force. When a negative number is returned, there was obviously an overflow; this is how we know whether a given calculation is valid or not. Unfortunately, we can't just write the entire thing in a <tt class="literal">for</tt> loop iterating from <tt class="literal">1</tt> to <tt class="literal">9223372036854775807</tt> because even on modern computers the program would take longer to run than the age of the universe.</p><p>The goal is therefore to run <tt class="methodname">mulmod</tt> the fewest times possible. My algorithm is simple: take an iterator of <tt class="literal">2<sup>62</sup></tt> (approximately halfway up the number line) and try the <tt class="methodname">mulmod</tt> method. If it returns a negative, backtrack and divide the iterator by two, then try again. Therefore the <tt class="methodname">mulmod</tt> method will only be called around a hundred times.</p><p>The code follows. It accepts a <tt class="literal">func</tt> argument, and it works with methods which are only explained in future questions.</p><pre class="programlisting">public static long find_max_n (String func)
+{
+	// func accepts paramaters a, b, n
+	long a, b, n, jump;
+	boolean is_valid;
+																			
+	jump = (long) 1 &lt;&lt; 62;
+																			
+	for (n = jump; ; n += jump)
+	{
+		a = b = n - 1;
+																			
+		// {{{ is_valid = (n &gt; 0 &amp;&amp; func (a, b, n) &gt;= 0);
+		is_valid = n &gt; 0; // check if n itself exceeds Java's capacity
+																			
+		if (is_valid)
+		{
+			if (func.equals ("mulmod"))
+			{
+				is_valid = mulmod (a, b, n) &gt;= 0;
+			}
+			else if (func.equals ("mulmod_java"))
+			{
+				is_valid = mulmod_java (a, b, n) &gt;= 0;
+			}
+			else if (func.equals ("mulmod_with_addmod"))
+			{
+				is_valid = mulmod_with_addmod (a, b, n) &gt;= 0;
+			}
+			else if (func.equals ("addmod"))
+			{
+				is_valid = addmod (a, b, n) &gt;= 0;
+			}
+			else if (func.equals ("addmod_java"))
+			{
+				is_valid = addmod_java (a, b, n) &gt;= 0;
+			}
+			else if (func.equals ("expmod"))
+			{
+				is_valid = expmod (a, b, n) &gt;= 0;
+			}
+		}
+																			
+		// }}} is_valid
+																			
+		if (is_valid == false)
+		{
+			n -= jump; // backtrack to last known good value
+																			
+			jump &gt;&gt;&gt;= 1;
+																			
+			if (jump == 0) break; // The previous n was indeed the maximum n                                                                                
+			// So loop -- add (old jump)/2 to n and try that.
+		}
+	}
+																			
+	return n;
+}</pre><p>And so, the answers:</p><div class="itemizedlist"><ul type="disc"><li><p><tt class="methodname">mulmod_java</tt> accepts a maximum <tt class="varname">n</tt> of <tt class="literal">3037000500</tt> (<tt class="varname">a</tt> and <tt class="varname">b</tt> are less than the square root of 2<sup>63</sup>).</p></li><li><p><tt class="methodname">mulmod</tt> accepts a maximum <tt class="varname">n</tt> of <tt class="literal">4611686018427387904</tt> (2<sup>62</sup>).</p></li></ul></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-3"></a>Question 3</h2></div></div><div></div></div><p>The question asks for an improvement to the <tt class="methodname">addmod_java</tt> shown in <a href="#question-2" title="Question 2">Question 2</a>.</p><p>The problem with the existing algorithm is that it <tt class="literal">a + b</tt> can exceed the maximum value of a <tt class="literal">long</tt>. Since <tt class="literal">(a + b) % n</tt> can only be equal to either <tt class="literal">a + b - n</tt> or <tt class="literal">a + b</tt>, it is easy to write a special-case algorithm to optimize <tt class="methodname">mulmod</tt>.</p><pre class="programlisting">public static long addmod (long a, long b, long n)
+{
+	// assume a &lt; n,  b &lt; n, and all three are positive
+																			
+	long result = a - n + b;
+																			
+	if (result &gt;= 0)
+	{
+		return result;
+	}
+	else
+	{
+		return result + n;
+	}
+}</pre><p>Then, edit <tt class="methodname">mulmod</tt> to use <tt class="methodname">addmod</tt> in the place of <tt class="methodname">addmod_java</tt>.</p><pre class="programlisting">public static long mulmod_with_addmod (long a, long b, long n)
+{
+	long a_doubled;
+									
+	if (b == 0) return 0; // a * 0 = 0 %n
+									
+	a_doubled = addmod (a, a, n);
+									
+	if ((b &amp; 1) == 0)
+	{
+		// a * b = (2 * a) * (b / 2) % n
+		return mulmod_with_addmod (a_doubled,
+					   b &gt;&gt;&gt; 1,
+					   n);
+	}
+	else
+	{
+		// a * b = a + (2 * a) * ((b - 1) / 2) % n
+		return addmod (a,
+			       mulmod_with_addmod (a_doubled,
+						   b &gt;&gt;&gt; 1,
+						   n),
+			       n);
+	}
+}</pre><p>This simple algorithm also speeds up the <tt class="methodname">mulmod</tt> somewhat, since it replaces a costly mod operation with a comparison and two or three additions.</p><p>The algorithm now extends to the maximum positive value of a <tt class="literal">long</tt> integer: that is, <tt class="literal">n = 9223372036854775807</tt>.</p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-4"></a>Question 4</h2></div></div><div></div></div><p>The <tt class="methodname">expmod</tt> method is even <span class="emphasis"><em>easier</em></span> to write than the <tt class="methodname">mulmod</tt> method, since it's basically all written already. It just needs a few replacements.</p><pre class="programlisting">public static long expmod (long a, long b, long n)
+{
+	long a_squared;
+									
+	if (b == 0) return 1; // a ^ n = 1 % n
+									
+	a_squared = mulmod_with_addmod (a, a, n);
+									
+	if ((b &amp; 1) == 0)
+	{
+		// a ^ b = (a ^ 2) ^ (b / 2)
+		return expmod (a_squared, b &gt;&gt;&gt; 1, n);
+	}
+	else
+	{
+		// a ^ b = a * (a ^ 2) ^ ((b - 1) / 2)
+		return mulmod_with_addmod (a,
+					   expmod (a_squared,
+						   b &gt;&gt;&gt; 1,
+						   n),
+					   n);
+	}
+}</pre><p>Given <tt class="varname">a</tt> = <tt class="literal">1274434408442</tt>, <tt class="varname">b</tt> = <tt class="literal">589394265617</tt>, and <tt class="varname">n</tt> = <tt class="literal">1606818609763</tt>, the resultant (<tt class="varname">c</tt>) is <tt class="literal">308250308250</tt> (notice the pattern in the digits: it's our course number repeated twice). Calling the method again with given parameters <tt class="literal">308250308250</tt> (<tt class="varname">c</tt>), <tt class="literal">433371342353</tt> (<tt class="varname">d</tt>), and <tt class="literal">1606818609763</tt> (<tt class="varname">n</tt>) gives the answer <tt class="literal">1274434408442</tt> (this number is actually <tt class="varname">a</tt> from above).</p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="code"></a>Code</h2></div></div><div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2433496"></a><tt class="filename">basis.java</tt></h3></div></div><div></div></div><p>All program listings from the preceding sections were placed in the file <a href="../basis.java" target="_top">../basis.java</a>. Each of the following classes extends the <tt class="classname">basis</tt> class, adding a front-end.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2433519"></a><tt class="filename">q1.java</tt></h3></div></div><div></div></div><pre class="programlisting">public class q1 extends basis
+{
+	public static void main(String[] argv)
+	{
+		long a, b;
+
+		if (argv.length != 2)
+		{
+			System.err.println ("usage: q1 [multiplier]"+
+					    " [multiplicand]");
+			return;
+		}
+
+		a = Long.parseLong (argv[0]);
+		b = Long.parseLong (argv[1]);
+
+		System.out.println (a + " * " + b + " = " +
+				    mulalarusse (a, b));
+	}
+}</pre><p>The program in <a href="../q1.java" target="_top">../q1.java</a> is a simple program to multiply two numbers. It requires two arguments, representing the two (<tt class="literal">long</tt>) numbers to be multiplied. For example:</p><pre class="screen"><tt class="prompt">$ </tt><b class="userinput"><tt>java q1 35 -143</tt></b>
+<tt class="computeroutput">35 * -143 = -5005</tt></pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2433575"></a><tt class="filename">q2.java</tt></h3></div></div><div></div></div><pre class="programlisting">public class q2 extends basis
+{
+	public static void main(String[] argv)
+	{
+		long n;
+
+		if (argv.length != 1)
+		{
+			System.err.println ("usage: q2 [-m] [-j] [-a]");
+			return;
+		}
+
+		if (argv[0].equals ("-m"))
+		{
+			n = find_max_n ("mulmod");
+			System.out.println ("Largest value of n with"
+					    + " mulmod: " + n);
+			return;
+		}
+
+		if (argv[0].equals ("-j"))
+		{
+			n = find_max_n ("mulmod_java");
+			System.out.println ("Largest value of n with"
+					    + " mulmod_java: " + n);
+			return;
+		}
+
+		if (argv[0].equals ("-a"))
+		{
+			n = find_max_n ("mulmod_with_addmod");
+			System.out.println ("Largest value of n with"
+					    + " mulmod_with_addmod: " + n);
+			return;
+		}
+
+		System.err.println ("usage: q2 [-m] [-j] [-a]");
+	}
+}</pre><p>The program in <a href="../q2.java" target="_top">../q2.java</a> finds the maximum valid <tt class="varname">n</tt>, as described in <a href="#question-2" title="Question 2">Question 2</a>. If called with the <tt class="literal">-m</tt> argument, it will test the <tt class="methodname">mulmod</tt> method. If called with the <tt class="literal">-j</tt> argument, it will test the <tt class="methodname">mulmod_java</tt> method. If called with the <tt class="literal">-a</tt> method, it will test the <tt class="methodname">mulmod_with_addmod</tt> method from <a href="#question-3" title="Question 3">Question 3</a>. For example:</p><pre class="screen"><tt class="prompt">$ </tt><b class="userinput"><tt>java q2 -j</tt></b>
+<tt class="computeroutput">Largest value of n with mulmod_java: 3037000500</tt></pre><p>Note that this program covers both <a href="#question-2" title="Question 2">Question 2</a> and <a href="#question-3" title="Question 3">Question 3</a>.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2433689"></a><tt class="filename">q4.java</tt></h3></div></div><div></div></div><pre class="programlisting">public class q4 extends basis
+{
+	public static void main (String[] argv)
+	{
+		long a, b, c, d, e, n;
+
+		a = 1274434408442L;
+		b = 589394265617L;
+		n = 1606818609763L;
+
+		System.out.println ("a: " + a);
+		System.out.println ("b: " + b);
+		System.out.println ("n: " + n);
+
+		System.out.println ("c = (a ^ b) % n");
+		c = expmod (a, b, n);
+		System.out.println ("c: " + c);
+
+		d = 433371342353L;
+
+		System.out.println ("d: " + d);
+
+		System.out.println ("e = (c ^ d) % n");
+		e = expmod (c, d, n);
+		System.out.println ("e: " + e);
+	}
+}</pre><p>The program in <a href="../q4.java" target="_top">../q4.java</a> goes through the question and prints its progress.</p><pre class="screen"><tt class="prompt">$ </tt><b class="userinput"><tt>java q4</tt></b>
+<tt class="computeroutput">a: 1274434408442
+b: 589394265617
+n: 1606818609763
+c = (a ^ b) % n
+c: 308250308250
+d: 433371342353
+e = (c ^ d) % n
+e: 1274434408442</tt>
+</pre></div></div></div></body></html>

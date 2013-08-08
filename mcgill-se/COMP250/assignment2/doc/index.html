@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COMP202 Assignment 2</title><link rel="stylesheet" href="style.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.64.1" /></head><body><div class="article" lang="en" xml:lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="id2400060"></a>COMP202 Assignment 2</h1></div><div><div class="author"><h3 class="author"><span class="firstname">Adam</span> <span class="surname">Hooper</span></h3><div class="affiliation"><div class="address"><p><br />
+					<span class="otheraddr">McGill ID: 260055737</span><br />
+					<tt class="email">&lt;<a href="mailto:adam.hooper@mail.mcgill.ca">adam.hooper@mail.mcgill.ca</a>&gt;</tt><br />
+				</p></div></div></div></div></div><div></div><hr /></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#framework">Framework</a></span></dt><dt><span class="sect1"><a href="#question-1">Question 1</a></span></dt><dt><span class="sect1"><a href="#question2">Question 2</a></span></dt><dt><span class="sect1"><a href="#question-3">Question 3</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2439695">Part A</a></span></dt><dt><span class="sect2"><a href="#id2438628">Part B</a></span></dt></dl></dd><dt><span class="sect1"><a href="#question-4">Question 4</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2438705">Part A</a></span></dt><dt><span class="sect2"><a href="#id2438757">Part B</a></span></dt></dl></dd><dt><span class="sect1"><a href="#question-5">Question 5</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="framework"></a>Framework</h2></div></div><div></div></div><p>Before writing any of the algorithms explicitly required by the questions, I wrote a framework to automate the generation of graphs using a Makefile and Gnuplot. The details of the Makefile are irrelevant to the questions at hand but have been included on the compact disc attached to this document.</p><p>To help with the benchmarking, I wrote an abstract base class, called <tt class="classname">Func</tt>. Every question in the assignment has a class derived from this <tt class="classname">Func</tt> which overwrites the <tt class="methodname">func</tt> method. It accepts a <tt class="literal">long</tt> argument <tt class="literal">n</tt>, and returns the n<sup>th</sup> element of the Fibonacci series, mod <tt class="literal">MOD_CONST</tt>.</p><p>The <tt class="classname">Func</tt> class contains methods to time the execution of <tt class="methodname">func</tt>. Since <tt class="methodname">func</tt> could take very little time to run, certain variables in the <tt class="classname">Func</tt> class are there to specify how many times to run <tt class="methodname">func</tt> in a loop, to get a more accurate result. For some algorithms, as <tt class="literal">n</tt> gets bigger the execution time increases; the class accounts for this by allowing a minimum and maximum number of executions. As <tt class="literal">n</tt> gets closer to <tt class="literal">maxN</tt>, the number of executions decreases from <tt class="literal">maxNumSamples</tt> to <tt class="literal">minNumSamples</tt>. Each subclass of <tt class="classname">Func</tt> overwrites these variables.</p><p>The <tt class="methodname">printDataPoints</tt> method simply prints <tt class="literal">n</tt> and the time taken to execute <tt class="literal">func(n)</tt> for all values of <tt class="literal">n</tt> specified in the derived classes.</p><pre class="programlisting">public abstract class Func
+{
+	public static int MOD_CONST = 3333373;
+
+	protected long minN = 0;
+	protected long iterN = 1;
+	protected long maxN = 0;
+
+	protected int maxNumSamples = 0;
+	protected int minNumSamples = 0;
+
+	public abstract int func (long n);
+
+	public double time (long n, int num_samples)
+	{
+		long startTime, endTime;
+		int i = num_samples;
+
+		startTime = System.currentTimeMillis ();
+
+		while (i-- &gt; 0)
+		{
+			func (n);
+		}
+
+		endTime = System.currentTimeMillis ();
+
+		return (double) (endTime - startTime) / num_samples;
+	}
+
+	public double time (long n) { return time (n, 1); }
+
+	private int findNumSamples (long n)
+	{
+		if (maxN == minN) return minNumSamples;
+
+		double slope = (double) (maxNumSamples - minNumSamples)
+			       / (maxN - minN);
+
+		return (int) ((n - minN) * slope + minNumSamples);
+	}
+
+	public void printDataPoints ()
+	{
+		int numSamples;
+
+		for (long n = minN; n &lt;= maxN &amp;&amp; n &gt;= 0; n += iterN)
+		{
+			numSamples = findNumSamples (n);
+
+			System.out.println (n + " " + time (n, numSamples));
+		}
+	}
+}
+</pre><p>Next I wrote a very simple <tt class="classname">Main</tt> class, to run <tt class="methodname">printDataPoints</tt> with any of the algorithms used in the derived classes. This was to automate the generation of graphs with Gnuplot.</p><pre class="programlisting">public class Main
+{
+	public static void main (String[] a)
+	{
+		Func f;
+
+		if (a[0].equals("fibrec"))
+		{
+			f = new FibRec ();
+		}
+		else if (a[0].equals ("fibit"))
+		{
+			f = new FibIt ();
+		}
+		else if (a[0].equals ("fibsquare"))
+		{
+			f = new FibSquare ();
+		}
+		else if (a[0].equals ("expmod"))
+		{
+			f = new ExpMod ();
+		}
+		else if (a[0].equals ("fast"))
+		{
+			f = new Fast ();
+		}
+		else
+		{
+			System.out.println ("Specify an algorithm.");
+			return;
+		}
+
+		f.printDataPoints ();
+	}
+}
+</pre></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-1"></a>Question 1</h2></div></div><div></div></div><p>We were asked to write the most basic implementation of the Fibonacci sequence: the recursive one. The code speaks for itself:</p><pre class="programlisting">public class FibRec extends Func
+{
+	public FibRec ()
+	{
+		minN = 0;
+		maxN = 35;
+
+		minNumSamples = 200;
+		maxNumSamples = 2;
+	}
+
+	public int func (long n)
+	{
+		if (n &lt; 2) return 1;
+
+		return (func (n - 1) % MOD_CONST
+			+ func (n - 2) % MOD_CONST)
+		       % MOD_CONST;
+	}
+}
+</pre><div class="mediaobject"><img src="../src/fibrec.png" /><div class="caption"><p>Graph of time needed to find <tt class="literal">func(n)</tt> with the FibRec algorithm</p></div></div><p>With this algorithm, my program can compute <tt class="literal">func(n)</tt> in under a second as long as <tt class="literal">n</tt> is less than or equal to <tt class="literal">34</tt>.</p><p>As an interesting note: the running time of this algorithm seems to be a multiple of the Fibonacci series. To find the running time at <tt class="literal">n + 1</tt>, add the running time at <tt class="literal">n</tt> and the running time at <tt class="literal">n - 1</tt>.</p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question2"></a>Question 2</h2></div></div><div></div></div><p>Next we were asked for an iterative Fibonacci algorithm. Since the Fibonacci series is a very simple sequence, an iterative approach is logical.</p><pre class="programlisting">public class FibIt extends Func
+{
+	public FibIt ()
+	{
+		minN = 0;
+		iterN = 1000000;
+		maxN = 45000000;
+
+		minNumSamples = 1;
+		maxNumSamples = 1;
+	}
+
+	public int func (long n)
+	{
+		int f = 1, g = 1;
+		int t;
+
+		while (--n &gt; 0)
+		{
+			t = f;
+			f = (f + g) % MOD_CONST;
+			g = t;
+		}
+
+		return f;
+	}
+}
+</pre><div class="mediaobject"><img src="../src/fibit.png" /><div class="caption"><p>Graph of time needed to find <tt class="literal">func(n)</tt> with the FibIt algorithm</p></div></div><p>With this program, on my computer, the largest value of <tt class="literal">n</tt> for which <tt class="literal">func(n)</tt> can be computed within one second is around <tt class="literal">36500000</tt>.</p><p>As one would expect, this function scales linearly.</p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-3"></a>Question 3</h2></div></div><div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2439695"></a>Part A</h3></div></div><div></div></div><p>We are asked to prove the following formula is valid by using mathematical induction:</p><div class="mediaobject"><img src="fibsquare-formula.png" /></div><p>The proof follows:</p><div class="mediaobject"><img src="fibsquare-proof.png" /></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2438628"></a>Part B</h3></div></div><div></div></div><p>We were asked to implement the above algorithm, as with Questions 1 and 2. I re-implemented the <tt class="methodname">mulmod</tt> algorithm from Assignment 1 to quickly find the squares of numbers.</p><pre class="programlisting">public class FibSquare extends Func
+{
+	public FibSquare ()
+	{
+		minN = 0;
+		maxN = 4000000;
+		iterN = 100000;
+
+		minNumSamples = 4;
+		maxNumSamples = 1;
+	}
+
+	private int square (long a)
+	{
+		return mulmod (a, a, MOD_CONST);
+	}
+
+	private int addmod (long a, long b, long n)
+	{
+		// assume a &lt; n,  b &lt; n, and all three are positive
+
+		long result = a - n + b;
+
+		if (result &gt;= 0)
+		{
+			return (int) result;
+		}
+		else
+		{
+			return (int) (result + n);
+		}
+	}
+
+	private int mulmod (long a, long b, int n)
+	{
+		long a_doubled;
+
+		if (b == 0) return 0; // a * 0 = 0 %n
+
+		a_doubled = addmod (a, a, n);
+
+		if ((b &amp; 1) == 0)
+		{
+			// a * b = (2 * a) * (b / 2) % n
+			return mulmod (a_doubled, b &gt;&gt;&gt; 1, n);
+		}
+		else
+		{
+			// a * b = a + (2 * a) * ((b - 1) / 2) % n
+			return addmod (a, mulmod (a_doubled, b &gt;&gt;&gt; 1, n), n);
+		}
+	}
+
+	public int func (long n)
+	{
+		if (n &lt; 3) return 1;
+
+		if ((n &amp; 1) == 1)
+		{
+			return addmod (square (func ((n + 1) / 2)),
+				       square (func ((n - 1) / 2)),
+				       MOD_CONST);
+		}
+		else
+		{
+			return addmod (square (func (n / 2 + 1)),
+				       -square (func (n / 2 - 1)),
+				       MOD_CONST);
+		}
+	}
+}
+</pre><div class="mediaobject"><img src="../src/fibsquare.png" /><div class="caption"><p>Graph of time needed to find <tt class="literal">func(n)</tt> with the FibSquare algorithm</p></div></div><p>On my computer, this program can compute <tt class="literal">func(n)</tt> in under a second up to around <tt class="literal">n = 2500000</tt>. The function scales better than the previous two, however: its increase is less than linear.</p></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-4"></a>Question 4</h2></div></div><div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2438705"></a>Part A</h3></div></div><div></div></div><p>We were asked to use mathematical induction to prove another formula:</p><div class="mediaobject"><img src="fibmatrix-formula.png" /></div><p>This time, the proof is extremely straightforward:</p><div class="mediaobject"><img src="fibmatrix-proof.png" /></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2438757"></a>Part B</h3></div></div><div></div></div><p>To implement this algorithm in code, I created a “<span class="quote">Matrix2x2</span>” object to handle simple matrix multiplication. I took a shortcut which is clearly commented in the code. The code:</p><pre class="programlisting">public class ExpMod extends Func
+{
+	public ExpMod ()
+	{
+		minN = 0;
+		maxN = Long.MAX_VALUE;
+		iterN = Long.MAX_VALUE &gt;&gt; 7;
+
+		minNumSamples = 100;
+		maxNumSamples = 100;
+	}
+
+	public int func (long n)
+	{
+		if (n &lt; 2) return 1;
+
+		Matrix2x2 m = new Matrix2x2 (0, 1, 1);
+
+		m = Matrix2x2.ExpMod (m, n);
+
+		return m.d;
+	}
+}
+
+class Matrix2x2
+{
+	/*
+	 * [ a  b ]
+	 * [ c  d ]
+	 *
+	 * c is *always* equal to b. Therefore, to optimize all the functions
+	 * ahead, "b" is used any place "c" would be needed.
+	 */
+	public int a, b, d;
+
+	private static int addmod (int a, int b, int n)
+	{
+		// assume a &lt; n,  b &lt; n, and all three are positive
+
+		int result = a - n + b;
+
+		if (result &gt;= 0)
+		{
+			return result;
+		}
+		else
+		{
+			return result + n;
+		}
+	}
+
+	private static int mulmod (int a, long b, int n)
+	{
+		int a_doubled;
+
+		if (b == 0) return 0; // a * 0 = 0 %n
+
+		a_doubled = addmod (a, a, n);
+
+		if ((b &amp; 1) == 0)
+		{
+			// a * b = (2 * a) * (b / 2) % n
+			return mulmod (a_doubled, b &gt;&gt;&gt; 1, n);
+		}
+		else
+		{
+			// a * b = a + (2 * a) * ((b - 1) / 2) % n
+			return addmod (a, mulmod (a_doubled, b &gt;&gt;&gt; 1, n), n);
+		}
+	}
+
+	public Matrix2x2 (int a, int b, int d)
+	{
+		this.a = a;
+		this.b = b;
+		this.d = d;
+	}
+
+	public Matrix2x2 square ()
+	{
+		return Multiply (this);
+	}
+
+	public Matrix2x2 Multiply (Matrix2x2 m)
+	{
+		Matrix2x2 ret = new Matrix2x2 (
+				addmod (mulmod (a, m.a, Func.MOD_CONST),
+					mulmod (b, m.b, Func.MOD_CONST),
+					Func.MOD_CONST),
+				addmod (mulmod (a, m.b, Func.MOD_CONST),
+					mulmod (b, m.d, Func.MOD_CONST),
+					Func.MOD_CONST),
+				addmod (mulmod (b, m.b, Func.MOD_CONST),
+					mulmod (d, m.d, Func.MOD_CONST),
+					Func.MOD_CONST)
+				);
+		return ret;
+	}
+
+	public static Matrix2x2 ExpMod (Matrix2x2 m, long b)
+	{
+		if (b == 0) return new Matrix2x2 (1, 0, 1);
+
+		Matrix2x2 half_squared = ExpMod (m.square (), b &gt;&gt; 1);
+
+		if ((b &amp; 1) == 0)
+		{
+			return half_squared;
+		}
+		else
+		{
+			return half_squared.Multiply (m);
+		}
+	}
+}
+</pre><div class="mediaobject"><img src="../src/expmod.png" /><div class="caption"><p>Graph of time needed to find <tt class="literal">func(n)</tt> with the ExpMod algorithm</p></div></div><p>This function scales logarithmically. I had to wildly guess the value of <tt class="literal">n</tt> for which it would take my computer a second to find <tt class="literal">f(n)</tt> with this program (since <tt class="literal">n</tt> exceeds <tt class="literal">Long.MAX_VALUE</tt>). My estimate: since the function scales logarithmically, using my largest value of <tt class="literal">n</tt>, I find that <tt class="literal">log(9223372036854775680) * c = 0.68</tt>. That means <tt class="literal">c = 0.015571946473087227</tt>. Then I solved for <tt class="literal">x</tt> in <tt class="literal">log(x) * c = 1000</tt> (1000 milliseconds in a second). <tt class="literal">log(x) = 64218.0476107008</tt>; therefore, my computer would take a whole second at around <tt class="literal">n = e<sup>64218</sup></tt>.</p></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="question-5"></a>Question 5</h2></div></div><div></div></div><p>The question asks for a fast algorithm to calculate <tt class="literal">f(n) % M</tt> for small values of <tt class="literal">M</tt>.</p><p>The trick, which is hinted in the question: the Fibonacci sequence mod a number <tt class="literal">M</tt> loops: as soon as one number in the sequence mod <tt class="literal">M</tt> is <tt class="literal">0</tt> and the next mod <tt class="literal">M</tt> is <tt class="literal">1</tt>, the entire loop will start back from square one (since the multiples of <tt class="literal">M</tt> in both elements of the sequence add nothing when modded by <tt class="literal">M</tt>). My algorithm finds the magic number <tt class="literal">n</tt> for which <tt class="literal">f(n)</tt> repeats and calculates the Fibonacci number mod <tt class="literal">n</tt> using the ExpMod algorithm.</p><p>I never proved that this magic number always exists. I'll just trust to faith that it does. It feels good to do that from time to time  it's as if all of mathematics will work just as well even if I don't understand it.</p><p>To conform with the question's suggestion, I set <tt class="literal">MOD_CONST</tt> to <tt class="literal">1000</tt> for the graph of the time needed to run this algorithm.</p><pre class="programlisting">import java.util.Vector;
+
+public class Fast extends ExpMod
+{
+	private int period = 0;
+
+	public Fast ()
+	{
+		MOD_CONST = 1000;
+
+		minN = 0;
+		maxN = 4000;
+		iterN = 2;
+
+		maxNumSamples = 1000;
+		minNumSamples = 1000;
+
+		period = find_period ();
+	}
+
+	public int func (long n)
+	{
+		return super.func (n % period);
+	}
+
+	private int find_period ()
+	{
+		// Iterate as with FibIt, and stop when we hit 0 and 1 again
+		int f = 1, g = 1;
+		int t;
+		int ret = 0;
+
+		while (true)
+		{
+			ret++;
+
+			if (g % MOD_CONST == 0 &amp;&amp; f % MOD_CONST == 1)
+			{
+				return ret;
+			}
+
+			t = f;
+			f = (f + g) % MOD_CONST;
+			g = t;
+		}
+	}
+}
+</pre><div class="mediaobject"><img src="../src/fast.png" /><div class="caption"><p>Graph of time needed to find <tt class="literal">func(n) % 1000</tt> with the Fast algorithm</p></div></div><p>This function scales periodically, as can be seen in the graph, and has a definite maximum. When <tt class="literal">M = 1000</tt>, the maximum time needed to compute <tt class="literal">f(n) % M</tt> is under 0.03 milliseconds.</p></div></div></body></html>

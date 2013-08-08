@@ -1,0 +1,9 @@
+> (load "q6_3-20.scm")
+> (read-eval-print)
+--> let f = proc (y, z) +(y, -(z,5)) in (f 2 28)
+25
+--> let f = proc (y, z) +(y, -(z,5)) in (f 2)
+apply-procval: Wrong number of arguments
+> (read-eval-print)
+--> let f = proc (y, z) +(y, -(z,5)) in (f 1 2 3)
+apply-procval: Wrong number of arguments

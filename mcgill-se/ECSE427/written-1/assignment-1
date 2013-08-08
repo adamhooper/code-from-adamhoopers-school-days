@@ -1,0 +1,123 @@
+1. a. Disable all interrupts should only be allowed in kernel mode. If a normal
+      program could disable all interrupts, it would be able to run forever
+      without the operating system ever getting control of the CPU (since the
+      operating system uses the clock interrupt to regain control).
+   b. Reading the time-of-day clock can be allowed in any mode. It cannot harm
+      the system, and the information is not secret.
+   c. Setting the time-of-day clock should only be allowed in kernel mode, so
+      that not just any program can set the time (for security reasons).
+   d. Changing the memory map should only be allowed in kernel mode. Normal
+      programs would otherwise be able to "hijack" the operating system.
+
+2. A CPU with a 4-stage pipeline, each stage taking 1ns, will execute
+   approximately 1 billion operations per second. Though any individual
+   instruction takes 4ns, the CPU is effectively processing four of them
+   simultaneously.
+
+3. a. BLOCK DEVICES
+      These devices pass data to and from hardware using buffers (usually
+      several kilobytes big). They use buffers because the underlying hardware
+      they represent manipulate blocks of data instead of individual
+      characters. Good examples are disk drives (e.g., /dev/hda) and CD drives
+      (e.g., /dev/hdc on many computers).
+   b. READ-ONLY CHARACTER DEVICES
+      These devices provide a stream of incoming characters from hardware.
+      Examples are mice (e.g., /dev/input/mouse0), USB events (e.g.,
+      /dev/input/event0), or joysticks (e.g., /dev/input/js0).
+   c. READ-WRITE CHARACTER DEVICES
+      These devices represent hardware which accepts a character stream as
+      input and provide a character stream as output. Examples are
+      pseudo-terminals (e.g., /dev/ptya0), sound mixers (e.g., /dev/mixer), and
+      hardware serial ports (e.g., /dev/ttyS1).
+   d. VIRTUAL CHARACTER DEVICES
+      These devices are written entirely in software, providing a specific
+      convenience to programmers. Examples include /dev/null, /dev/zero,
+      and /dev/random.
+
+4. A daemon is a program which runs in the background, performing a task
+   without (direct) user interaction. Daemons are different from other programs
+   in that they require no user interaction. Four example daemons from the lab
+   machines: udevd (automatically creates and deletes /dev entries based on the
+   state of device drivers); ypbind (keeps a connection with the NIS domain
+   server); sshd (listens for incoming SSH connections); and klogd (logs kernel
+   messages).
+
+5. Technically, the salesman is not lying; lying (in English) is defined as
+   deceiving on purpose. The salesman is simply misunderstanding the question
+   because he doesn't know and he wants to make a sale. Or he's trying to
+   simplify the situation for your benefit.
+
+   On 99% of monitors with USB ports, the monitor has a built-in USB hub which
+   connects those ports to the PC. The camera can be plugged into the monitor
+   to complete the connection from the camera to the PC. The PC needs software
+   loaded to view pictures. So the salesman is most likely giving false
+   information, unintentionally.
+
+   It could be that the salesman is knowledgeable and this monitor is somewhat
+   special. Monitors could exist which have their own internal CPU and USB
+   controller; they could load pictures from a digital camera and display them.
+   This would imply that the monitor is also a (small) computer in and of
+   itself.
+
+6. A trap is an exception triggered by the running program; an interrupt is an
+   exception triggered by something external.
+
+   System calls are invoked using a trap mechanism. The caller prepares
+   processor registers and then calls a trap. Since interrupts are always
+   handled in kernel mode, the CPU executes its interrupt service request in
+   kernel mode. The ISR reads the registers and executes the appropriate system
+   call (still in kernel mode). Then the ISR switches the processor back to
+   user mode and returns; the execution flow jumps back to the user-mode
+   process (immediately following the trap instruction).
+
+7. To perform process switching in hardware, the architecture would need some
+   mechanism with which to find out where in memory to store the data from its
+   registers when switching out of a process. When switching back in, it would
+   have to know where in memory it left the data.
+
+   A process switch would work as follows:
+
+   1. The operating system loads a register with the starting memory address
+      for the register dump. (Since the processor has a fixed number of
+      registers to store, the operating system always knows how much memory to
+      allocate.)
+   2. The operating system loads a register with the starting memory address
+      for the register load (for the new process).
+   3. The operating system sends our "switch" instruction to the processor.
+   4. The processor dumps its registers, starting at the former memory address.
+   5. The processor loads its registers with data starting at the latter memory
+      address.
+   6. The processor resumes normal operation. Since the program counter is one
+      of the stored registers, it will be pointing to the correct location for
+      the new process.
+
+8. Yes, single-computer systems can certainly use a client-server model.
+   Countless examples exist: personal databases, web servers, and even
+   windowing systems use a client-server model, since it's simpler to code than
+   alternatives. On my computer right now, for example, the following servers
+   are running for local client-server connections only: syslogd, klogd, famd,
+   netdaemon, xfs, atd, apache (for web development testing), gdm, getty,
+   mysqld (again, for web development testing), X, spamd, x-session-manager,
+   gnome-keyring-daemon, esd, gnome-smproxy, gnome-settings-daemon,
+   evolution-data-server-1.0, bonobo-activation-server, cupsd, Xprt,
+   gnome-pty-helper, gconfd, dbus-daemon-1, and gnome-vfs-daemon.
+
+9. - Mainframe operating systems often run many virtual computers, each with
+     its own operating system (so if one dies, the other "computers" will
+     handle the load while it reboots).
+   - Mainframe operating systems tend to be more reliable, with failsafes and
+     fallbacks all over the place.
+   - Mainframe operating systems are designed to handle much higher I/O
+     throughput than personal computer operating systems.
+   - Personal computer operating systems are designed to give more CPU time to
+     the task which the user is performing (i.e., the focused window).
+
+10. Multiprogramming is the act of running several processes "concurrently" on
+    a single processor. It is accomplished by switching between processes many
+    times per second, to give the illusion that all processes are running at
+    the same time.
+
+    Spooling is the "opposite" of multiprogramming; it is most commonly
+    associated with printing. Since many processes can write to a printer at
+    once, spooling is performed to reorder the processes' output so that the
+    printer gets one process's complete output before the next's.

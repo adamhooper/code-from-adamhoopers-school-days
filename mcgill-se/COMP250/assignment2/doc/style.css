@@ -1,0 +1,22 @@
+@page {
+	margin: 2cm;
+}
+@media print {
+	body {
+		font-size: 11pt;
+	}
+	div.mediaobject {
+		page-break-inside: avoid;
+		display: block;
+	}
+}
+
+pre {
+	border: 1px dashed gray;
+	background: #fafafa;
+	padding: 1em;
+}
+
+img {
+	margin-left: 2em;
+}

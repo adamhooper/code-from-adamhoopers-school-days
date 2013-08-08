@@ -1,0 +1,5 @@
+> (load "q5.scm")
+> (filtered-accumulate (lambda (x) (= 0 (modulo x 2))) + 0 (lambda (x) x) 1 (lambda (x) (+ 1 x)) 10) ; Sum of even numbers from 1 to 10
+30
+> (filtered-accumulate (lambda (x) (= 0 (modulo x 3))) * 1 (lambda (x) (* x x)) 1 (lambda (x) (+ 1 x)) 10) ; 3^2 * 6^2 * 9^2
+26244

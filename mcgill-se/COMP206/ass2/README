@@ -1,0 +1,4 @@
+The products program will look for "inventory.txt" in
+"../../data/inventory.txt" because I assumed the directory structure from
+assignment 1 (program in store/source/c, data in store/data). It's a simple
+#define at the top, though -- easy to edit.

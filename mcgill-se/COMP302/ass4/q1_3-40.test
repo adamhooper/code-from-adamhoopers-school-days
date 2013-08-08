@@ -1,0 +1,24 @@
+> (load "q1_3-40.scm")
+> (read-eval-print)
+--> define x = 5
+okay
+--> x
+5
+--> let x = 7 in x
+7
+--> let f = proc() x in let x = 7 in x
+7
+--> let f = proc() x in let x = 7 in (f)
+5
+--> define even = proc(x) if zero?(x) then 1 else (odd sub1(x))
+okay
+--> define odd = proc(x) if zero?(x) then 0 else (even sub1(x))
+okay
+--> (even 5)
+0
+--> (odd 5)
+1
+--> (even 1221)
+0
+--> (odd 1421)
+1

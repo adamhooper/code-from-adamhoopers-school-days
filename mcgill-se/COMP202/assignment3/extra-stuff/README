@@ -1,0 +1,8 @@
+This version is NOT complete, but it finds a solution for all 6+-digit numbers.
+The neat features is that the right-hand side of the equation only contains
+the '/' sign.
+
+gprof-output is the output from gprof when running with a relatively long
+equation. (gprof is the GNU profiler).
+
+solve_time.c is a stress-tester. 'make torture' to build it.

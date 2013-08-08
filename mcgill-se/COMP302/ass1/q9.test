@@ -1,0 +1,7 @@
+> (load "q9.scm")
+> (define square (lambda (x) (* x x)))
+> (define cube (lambda (x) (* x x x)))
+> (apply-all (list list sqrt square cube) 4)
+((4) 2 16 64)
+> (apply-all (list (lambda (x) 1) (lambda (x) x) list) 6)
+(1 6 (6))

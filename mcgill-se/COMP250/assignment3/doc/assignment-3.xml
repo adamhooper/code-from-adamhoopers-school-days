@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+	<articleinfo>
+		<title>COMP202 Assignment 3</title>
+
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address>
+					<otheraddr>McGill ID: 260055737</otheraddr>
+					<email>adam.hooper@mail.mcgill.ca</email>
+				</address>
+			</affiliation>
+		</author>
+	</articleinfo>
+	<sect1>
+		<title>Question 1</title>
+		<sect2>
+			<title>Part A</title>
+			<para>We are asked the following:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="q1a-q.png" format="PNG"/></imageobject>
+			</mediaobject>
+			<para>Here is a proof:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="q1a-a.png" format="PNG"/></imageobject>
+			</mediaobject>
+		</sect2>
+		<sect2>
+			<title>Part B</title>
+			<para>We are asked the following:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="q1b-q.png" format="PNG"/></imageobject>
+			</mediaobject>
+			<para>The proof is given in my answer to Part C.</para>
+		</sect2>
+		<sect2>
+			<title>Part C</title>
+			<para>We are asked the following:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="q1c-q.png" format="PNG"/></imageobject>
+			</mediaobject>
+			<para>I've written a proof which encompasses both Part B and Part C:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="q1c-a.png" format="PNG"/></imageobject>
+			</mediaobject>
+		</sect2>
+	</sect1>
+	<sect1>
+		<title>Question 2</title>
+		<para>We are asked to develop a Quintit calculator which supports addition, subtraction, multiplication, division (all mod <literal>5</literal>) and nested parantheses with proper order of operations. Before creating the calculator, though, a <classname>Quintit</classname> class is needed. It is a very simple, straightforward class:</para>
+		<programlisting><xi:include href="../src/Quintit.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		<para>With <classname>Quintit</classname>s available, a calculator can be coded. It stores two stacks: <literal>digits</literal>, a stack of <classname>Quintit</classname>s; and <literal>operators</literal>, a stack of one-character-long <classname>String</classname>s containing one of <literal>+</literal>, <literal>-</literal>, <literal>*</literal>, <literal>/</literal> and <literal>(</literal>.</para>
+		<para>The <methodname>calculate</methodname> method takes a <classname>String</classname> expression as input, with digits and operators. It is assumed the input is sane. Each <literal>char</literal>acter in the <classname>String</classname> is passed to <methodname>handleChar</methodname>.</para>
+		<para>Within <methodname>handleChar</methodname>, the two stacks are manipulated. If <literal>c</literal> is a <classname>Quintit</classname>, it is pushed onto the <literal>digits</literal> stack. If the operator before this digit indicates multiplication or division, the operation is performed immediately.</para>
+		<para>If <literal>c</literal> is a addition or subtraction operator, the previous operator will be applied to the previous two digits, since anything to the left of a <literal>+</literal> or <literal>-</literal> can be treated as if it were in parentheses. If <literal>c</literal> is <emphasis>any</emphasis> operator, it is pushed onto the <literal>operators</literal> stack.</para>
+		<para>If <literal>c</literal> is an opening parenthesis, it is pushed onto the <literal>operators</literal> stack. This serves as a kind of marker: anything before the <literal>(</literal> in the stack is out of scope.</para>
+		<para>If <literal>c</literal> is a closing parenthesis, the stacks are simplified until the top operator is <literal>(</literal>; this means the expression between parentheses has been simplified by a single number which is already on the top of the <literal>digits</literal> stack, so the <literal>(</literal> is popped off the top of the <literal>operators</literal> stack. The contents of the parentheses have been reduced to a single number, and so <methodname>handleChar</methodname> acts as if it has received a single digit and not a <literal>)</literal> character.</para>
+		<para>The <literal>operators</literal> stack never contains a <literal>)</literal> character: when a <literal>)</literal> is reached everything between parentheses is replaced by the simplified equivalent expression.</para>
+		<para>When the entire input string has been parsed, <literal>digits</literal> will either contain a single <classname>Quintit</classname> or two. In the latter case, the single operator in the <literal>operators</literal> stack is either a <literal>+</literal> or <literal>-</literal> and so it is applied to the <literal>digits</literal> stack.</para>
+		<para>The <literal>digits</literal> stack is thus simplified, and its single remaining <classname>Quintit</classname> is returned.</para>
+		<para>The Java code for my calculator:</para>
+		<programlisting><xi:include href="../src/QuintitCalculator.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		<para>I then wrote a very simple front-end which uses this calculator:</para>
+		<programlisting><xi:include href="../src/Main.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		<para>My program gives the correct answers to all the test cases given in the assignment:</para>
+		<screen><prompt>adam@hera:build$ </prompt><userinput>java Main '3+(4*2)'</userinput>
+<computeroutput>1</computeroutput>
+<prompt>adam@hera:build$ </prompt><userinput>java Main '1+2*2'</userinput>
+<computeroutput>0</computeroutput>
+<prompt>adam@hera:build$ </prompt><userinput>java Main '3/(1+1)'</userinput>
+<computeroutput>4</computeroutput>
+<prompt>adam@hera:build$ </prompt><userinput>java Main '2*4/(2+1)/(3-2*4)+3'</userinput>
+<computeroutput>DIVISION BY ZERO</computeroutput></screen>
+	</sect1>
+</article>

@@ -1,0 +1,9 @@
+adam@dionysus:~$ mkdir store
+adam@dionysus:~$ cd store
+adam@dionysus:~/store$ mkdir source data runtime
+adam@dionysus:~/store$ cd source
+adam@dionysus:~/store/source$ mkdir batch c html cgi perl
+adam@dionysus:~/store/source$ cd ../data
+adam@dionysus:~/store/data$ vi inventory.txt
+adam@dionysus:~/store/data$ vi members.txt
+adam@dionysus:~/store/data$

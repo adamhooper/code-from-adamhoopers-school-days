@@ -1,0 +1,14 @@
+I've separated all procedure definitions into files named after the question
+for which they are needed. I've also made *all-procedures.scm*, which is just a
+concatenation of all ten .scm files, because the assignment asks for it all in
+a single file. For the same reason, I have made *all-tests*, a concatenation of
+all the tests.
+
+Directory contents:
+
+README: this file
+all-procedures.scm: Scheme code for the entire assignment
+all-tests: all tests (a copy-pasted interactive Scheme session)
+q1.scm..q10.scm: individual answers to q1, q2, etc. (procedure definitions)
+q1.test..q10.test: individual tests of q1, q2, etc. procedures
+Makefile: I just used this to generate all-procedures.scm and all-tests

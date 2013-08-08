@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+	<articleinfo>
+		<title>COMP202 Assignment 2</title>
+
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address>
+					<otheraddr>McGill ID: 260055737</otheraddr>
+					<email>adam.hooper@mail.mcgill.ca</email>
+				</address>
+			</affiliation>
+		</author>
+	</articleinfo>
+	<sect1 id="framework">
+		<title>Framework</title>
+		<para>Before writing any of the algorithms explicitly required by the questions, I wrote a framework to automate the generation of graphs using a Makefile and Gnuplot. The details of the Makefile are irrelevant to the questions at hand but have been included on the compact disc attached to this document.</para>
+		<para>To help with the benchmarking, I wrote an abstract base class, called <classname>Func</classname>. Every question in the assignment has a class derived from this <classname>Func</classname> which overwrites the <methodname>func</methodname> method. It accepts a <literal>long</literal> argument <literal>n</literal>, and returns the n<superscript>th</superscript> element of the Fibonacci series, mod <literal>MOD_CONST</literal>.</para>
+		<para>The <classname>Func</classname> class contains methods to time the execution of <methodname>func</methodname>. Since <methodname>func</methodname> could take very little time to run, certain variables in the <classname>Func</classname> class are there to specify how many times to run <methodname>func</methodname> in a loop, to get a more accurate result. For some algorithms, as <literal>n</literal> gets bigger the execution time increases; the class accounts for this by allowing a minimum and maximum number of executions. As <literal>n</literal> gets closer to <literal>maxN</literal>, the number of executions decreases from <literal>maxNumSamples</literal> to <literal>minNumSamples</literal>. Each subclass of <classname>Func</classname> overwrites these variables.</para>
+		<para>The <methodname>printDataPoints</methodname> method simply prints <literal>n</literal> and the time taken to execute <literal>func(n)</literal> for all values of <literal>n</literal> specified in the derived classes.</para>
+		<programlisting><xi:include href="../src/Func.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		<para>Next I wrote a very simple <classname>Main</classname> class, to run <methodname>printDataPoints</methodname> with any of the algorithms used in the derived classes. This was to automate the generation of graphs with Gnuplot.</para>
+		<programlisting><xi:include href="../src/Main.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+	</sect1>
+	<sect1 id="question-1">
+		<title>Question 1</title>
+		<para>We were asked to write the most basic implementation of the Fibonacci sequence: the recursive one. The code speaks for itself:</para>
+		<programlisting><xi:include href="../src/FibRec.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		<mediaobject>
+			<imageobject><imagedata fileref="../src/fibrec.png" format="PNG"/></imageobject>
+			<caption>
+				<para>Graph of time needed to find <literal>func(n)</literal> with the FibRec algorithm</para>
+			</caption>
+		</mediaobject>
+		<para>With this algorithm, my program can compute <literal>func(n)</literal> in under a second as long as <literal>n</literal> is less than or equal to <literal>34</literal>.</para>
+		<para>As an interesting note: the running time of this algorithm seems to be a multiple of the Fibonacci series. To find the running time at <literal>n + 1</literal>, add the running time at <literal>n</literal> and the running time at <literal>n - 1</literal>.</para>
+	</sect1>
+	<sect1 id="question2">
+		<title>Question 2</title>
+		<para>Next we were asked for an iterative Fibonacci algorithm. Since the Fibonacci series is a very simple sequence, an iterative approach is logical.</para>
+		<programlisting><xi:include href="../src/FibIt.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		<mediaobject>
+			<imageobject><imagedata fileref="../src/fibit.png" format="PNG"/></imageobject>
+			<caption>
+				<para>Graph of time needed to find <literal>func(n)</literal> with the FibIt algorithm</para>
+			</caption>
+		</mediaobject>
+		<para>With this program, on my computer, the largest value of <literal>n</literal> for which <literal>func(n)</literal> can be computed within one second is around <literal>36500000</literal>.</para>
+		<para>As one would expect, this function scales linearly.</para>
+	</sect1>
+	<sect1 id="question-3">
+		<title>Question 3</title>
+		<sect2>
+			<title>Part A</title>
+			<para>We are asked to prove the following formula is valid by using mathematical induction:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="fibsquare-formula.tex" format="TEX"/></imageobject>
+				<imageobject><imagedata fileref="fibsquare-formula.png" format="PNG"/></imageobject>
+			</mediaobject>
+			<para>The proof follows:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="fibsquare-proof.tex" format="TEX"/></imageobject>
+				<imageobject><imagedata fileref="fibsquare-proof.png" format="PNG"/></imageobject>
+			</mediaobject>
+		</sect2>
+		<sect2>
+			<title>Part B</title>
+			<para>We were asked to implement the above algorithm, as with Questions 1 and 2. I re-implemented the <methodname>mulmod</methodname> algorithm from Assignment 1 to quickly find the squares of numbers.</para>
+			<programlisting><xi:include href="../src/FibSquare.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+			<mediaobject>
+				<imageobject><imagedata fileref="../src/fibsquare.png" format="PNG"/></imageobject>
+				<caption>
+					<para>Graph of time needed to find <literal>func(n)</literal> with the FibSquare algorithm</para>
+				</caption>
+			</mediaobject>
+			<para>On my computer, this program can compute <literal>func(n)</literal> in under a second up to around <literal>n = 2500000</literal>. The function scales better than the previous two, however: its increase is less than linear.</para>
+		</sect2>
+	</sect1>
+	<sect1 id="question-4">
+		<title>Question 4</title>
+		<sect2>
+			<title>Part A</title>
+			<para>We were asked to use mathematical induction to prove another formula:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="fibmatrix-formula.tex" format="TEX"/></imageobject>
+				<imageobject><imagedata fileref="fibmatrix-formula.png" format="PNG"/></imageobject>
+			</mediaobject>
+			<para>This time, the proof is extremely straightforward:</para>
+			<mediaobject>
+				<imageobject><imagedata fileref="fibmatrix-proof.tex" format="TEX"/></imageobject>
+				<imageobject><imagedata fileref="fibmatrix-proof.png" format="PNG"/></imageobject>
+			</mediaobject>
+		</sect2>
+		<sect2>
+			<title>Part B</title>
+			<para>To implement this algorithm in code, I created a <quote>Matrix2x2</quote> object to handle simple matrix multiplication. I took a shortcut which is clearly commented in the code. The code:</para>
+			<programlisting><xi:include href="../src/ExpMod.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+			<mediaobject>
+				<imageobject><imagedata fileref="../src/expmod.png" format="PNG"/></imageobject>
+				<caption>
+					<para>Graph of time needed to find <literal>func(n)</literal> with the ExpMod algorithm</para>
+				</caption>
+			</mediaobject>
+			<para>This function scales logarithmically. I had to wildly guess the value of <literal>n</literal> for which it would take my computer a second to find <literal>f(n)</literal> with this program (since <literal>n</literal> exceeds <literal>Long.MAX_VALUE</literal>). My estimate: since the function scales logarithmically, using my largest value of <literal>n</literal>, I find that <literal>log(9223372036854775680) * c = 0.68</literal>. That means <literal>c = 0.015571946473087227</literal>. Then I solved for <literal>x</literal> in <literal>log(x) * c = 1000</literal> (1000 milliseconds in a second). <literal>log(x) = 64218.0476107008</literal>; therefore, my computer would take a whole second at around <literal>n = e<superscript>64218</superscript></literal>.</para>
+		</sect2>
+	</sect1>
+	<sect1 id="question-5">
+		<title>Question 5</title>
+		<para>The question asks for a fast algorithm to calculate <literal>f(n) % M</literal> for small values of <literal>M</literal>.</para>
+		<para>The trick, which is hinted in the question: the Fibonacci sequence mod a number <literal>M</literal> loops: as soon as one number in the sequence mod <literal>M</literal> is <literal>0</literal> and the next mod <literal>M</literal> is <literal>1</literal>, the entire loop will start back from square one (since the multiples of <literal>M</literal> in both elements of the sequence add nothing when modded by <literal>M</literal>). My algorithm finds the magic number <literal>n</literal> for which <literal>f(n)</literal> repeats and calculates the Fibonacci number mod <literal>n</literal> using the ExpMod algorithm.</para>
+		<para>I never proved that this magic number always exists. I'll just trust to faith that it does. It feels good to do that from time to time &mdash; it's as if all of mathematics will work just as well even if I don't understand it.</para>
+		<para>To conform with the question's suggestion, I set <literal>MOD_CONST</literal> to <literal>1000</literal> for the graph of the time needed to run this algorithm.</para>
+		<programlisting><xi:include href="../src/Fast.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		<mediaobject>
+			<imageobject><imagedata fileref="../src/fast.png" format="PNG"/></imageobject>
+			<caption>
+				<para>Graph of time needed to find <literal>func(n) % 1000</literal> with the Fast algorithm</para>
+			</caption>
+		</mediaobject>
+		<para>This function scales periodically, as can be seen in the graph, and has a definite maximum. When <literal>M = 1000</literal>, the maximum time needed to compute <literal>f(n) % M</literal> is under 0.03 milliseconds.</para>
+	</sect1>
+</article>

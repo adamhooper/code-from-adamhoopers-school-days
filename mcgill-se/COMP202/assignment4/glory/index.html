@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<!-- Available (after the code's submission deadline) at:
+     http://www.adamhooper.com:4242/my_code/code/COMP202-assignment4/glory
+     Please email me at adam.hooper@mail.mcgill.ca with any questions.
+     -->
+<head>
+ <title>Circuit Simulator applet</title>
+ <link rel="author" title="Adam Hooper" href="http://www.adamhooper.com:4242" />
+ <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+ <style type="text/css">
+
+body {
+    margin: 1em;
+    background: #eee;
+}
+
+div#footer { border-top: 3px dashed silver; text-align: center; }
+div#footer>p.evilBrowser { display: none; }
+
+ </style>
+</head>
+<body>
+<h1>Circuit Simulator Applet</h1>
+
+<p>
+ <object title="Circuit Simulator Applet" codetype="application/java"
+         classid="java:CircuitSimulatorApplet.class" width="600" height="450">
+  Either the applet was not found on the web server or your browser will not
+  run Java byte code.
+ </object>
+</p>
+
+<h2>Instructions</h2>
+
+<p><em>Disclaimer</em>: Due to time and sanity constraints, this applet complies
+   with the question's requirements but goes no farther in terms of
+   user-friendliness. Any questions are probably addressed in this
+   badly-organized documentation.</p>
+<h3>Basic Premise</h3>
+<p>The entire applet runs on a canvas, where any object can be dragged wherever
+   you want it to be. Even the buttons which start at the lower-right are
+   draggable.</p>
+<p>To use the simulator, just add some nodes and gates, use wires to connect
+   them, and click on nodes to change their signals. Nodes and wires with
+   signals are blue; without signals, they're black.</p>
+<h3>Nodes?</h3>
+<p>Nodes are the basic building block of the circuit. For the most part you can
+   think of them as a big ball of conductiveness, except they have defined
+   inputs and outputs. Nodes can have an arbitrary number of input and output
+   wires, but you'll want to use just one input.</p>
+<p>It's easy to add a node to the circuit diagram:</p>
+<ol>
+ <li>Click on <samp>Create new Node</samp>. The node will appear in the
+     upper-left part of the circuit diagram.</li>
+ <li>Drag the node to the desired location.</li>
+</ol>
+<h3>Gates</h3>
+<p>Gates are bunches of nodes which behave differently. They have an explicitly
+   defined number of inputs and outputs and they take time to change values. If
+   an OR gate has a signal going into it, the output is guaranteed to have a
+   signal exactly 5 seconds later -- even if the signal is cut off 4 seconds
+   before that time (in which case, 6 seconds after the start of this
+   badly-explained paragraph it will <em>not</em> have a signal).</p>
+<p>To add a gate, use the same procedure as with nodes, but use their
+   corresponding buttons.</p>
+<h3>Wires</h3>
+<p>Wires connect nodes. Adding a wire is a 3-click operation:</p>
+<ol>
+ <li>Click on <samp>Add new Wire</samp>.</li>
+ <li>Click on the node which will be feeding the wire its signal.</li>
+ <li>Click on the node which will be receiving the wire's signal.</li>
+</ol>
+<p><em>Note</em>: Wires will <em>only</em> connect to nodes. Luckily, gates are
+   composed of bunches of nodes. AND and OR gates have two nodes on the left
+   half of the gate and one on the right. Inverter gates have one node on the
+   left and one on the right. If you're not sure you clicked on the first node
+   properly, just click on it again.</p>
+<p>Also of note: Nodes can have multiple outputs. They can also have multiple
+   inputs, but this makes less sense: its outputs will be set to the OR value
+   of the inputs (real-world circuits do not distinguish between input and
+   output, but this is <em>my</em> world, and in my world they do).</p>
+<h3>Putting it all together...</h3>
+<p>You've put together a beautiful circuit. Took a while, eh? Glad to see you
+   got through it (if not, read on...). To see the circuit in action, just
+   click on a node to toggle its output value. The rest of the circuit will
+   come alive as the gates fire. Try using a feedback loop: you can get the kind
+   of blinking that was previously only available on really annoying Christmas
+   lights.</p>
+<h3>Caveats</h3>
+<p>You mean, it <em>didn't</em> work perfectly? I'm not surprised. My eyes are
+   so tired that I'm typing without even looking at my screen right now: I doubt
+   I've actually caught all my bugs.</p>
+<p>Even if I did, I know I'm missing a very important feature: deletion. Yes,
+   that's right, you can't delete circuit components. Don't look for the hidden
+   features anywhere, they're just not there. I'm just refusing to code more
+   Java before the deadline. And there's the moral of the story: Deadlines
+   produce lower-quality code.</p>
+<p>Also, wires only send signals one way. This was in the question, though, so
+   I think it's all right. If a wire's not turning blue, it might be backwards.
+   I imagine adding a second wire in the proper direction would solve the
+   dilemma. Or it would crash the applet. We were never asked for a
+   <em>reliable</em> applet....</p>
+<h3>The Code</h3>
+<p>The UI doesn't do that great a job of separating the user from the
+   programming concepts used. So if you've used the applet you probably have
+   a good idea of how it works. If not, the code's very heavily commented, so
+   it shouldn't be that hard to understand.</p>
+<p>Evil hacks are clearly marked. Beware, ye who ventures near them.</p>
+<h3>Closing Remarks</h3>
+<p>In the course of this project, I learned more about programming with Swing
+   and AWT in particular than I did about programming GUIs in general,
+   unfortunately. I realize that my final result is a mess, but it's really just
+   a matter of two or three critical bugs (and a couple of FIXMEs in the code)
+   which I never had the time to fix.</p>
+<p>I also rediscovered what I've known for a while, that GUIs are a pain in the
+   neck. Unfortunately, that applies especially to canvas-like GUIs. I hate
+   every one I've ever encountered, and mine certianly does nothing to change my
+   feelings about them. I believe they simply cannot be as intuitive as normal
+   user interfaces. However, I don't know how to implement circuit diagrams with
+   a normal user interface. So it follows quite logically that I believe this
+   program could not possibly be as intuitive as, say, a well-designed web page.
+   </p>
+<p>Speaking of bad UIs... it takes <em>forever</em> to upload all these files
+   to WebCT!</p>
+
+<div id="footer">
+ <p class="evilBrowser">Your browser can't handle CSS properly. On this page it
+  will make no difference, but for the future I suggest you upgrade to
+  <a href="http://mozilla.org">a better web browser</a>. Mozilla Firebird
+  is quite nice.</p>
+ <a href="http://validator.w3.org/check/referer"><img
+    src="http://www.w3.org/Icons/valid-xhtml11"
+    alt="Valid XHTML 1.1!" height="31" width="88" /></a>
+ <a href="http://jigsaw.w3.org/css-validator/"><img 
+       style="border:0;width:88px;height:31px"
+       src="http://jigsaw.w3.org/css-validator/images/vcss" 
+       alt="Valid CSS!" /></a>
+</div>
+</body>
+</html>

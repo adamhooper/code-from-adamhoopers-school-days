@@ -1,0 +1,9 @@
+Each file represents half of the answer to a question. The ".scm" files are
+the Scheme files which answer the question; the ".test" files are copy/pasted
+from an interactive Scheme session, testing the various features I've added.
+
+The files have a simple naming scheme: "q<num>_<chapter>-<question>.scm" means
+"The answer to question <num>, exercise <chapter>.<question>". I have commented
+each file with exactly which changes I've made to the original interpreter, and
+from where I copied the original interpreter (since there is a lot of copying
+of code).

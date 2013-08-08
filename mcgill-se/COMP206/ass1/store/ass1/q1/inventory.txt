@@ -1,0 +1,6 @@
+99999,Love Potion Number 9,5,119.99
+10231,Laugh Potion,0,15.99
+13234,Constipation Clearer,200,5.99
+16231,Brain Growth Hormone,17,79.99
+43121,Bovine Growth Hormone,16,4.99
+43029,Get Thin Quick,32,39.99

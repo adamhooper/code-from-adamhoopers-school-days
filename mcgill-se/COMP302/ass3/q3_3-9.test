@@ -1,0 +1,12 @@
+> (load "q3_3-9.scm")
+> (read-eval-print)
+--> +(3,4)
+7
+--> +(3,4,5)
+add-prim: Wrong number of arguments
+> (read-eval-print)
+--> +(3)
+add-prim: Wrong number of arguments
+> (read-eval-print)
+--> +(-(3,4))
+add-prim: Wrong number of arguments

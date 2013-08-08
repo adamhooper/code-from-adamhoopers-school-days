@@ -1,0 +1,20 @@
+There are tons of files included here, but they are named nicely.
+
+The files which do *not* start with the letter "q" are auxiliary: they were
+used by me, they may be required by the q files, but they don't answer any
+questions in and of themselves.
+
+The rest of the files are numbered as follows:
+
+q#1_#2-#3[-#4].(scm|test)
+
+Where:
+
+#1 is the question number from the assignment
+#2 is the chapter
+#3 is the exercise number in that chapter
+#4 is the part of that exercise, if the exercise is divided into parts. In
+   Chapter 5 we deal with four implementations -- these are numbered 1 to 4
+"scm" files contain code, and "test" files contain tests.
+
+Note that Exercise 5.5 only deals with code and 5.6 only deals with a test.

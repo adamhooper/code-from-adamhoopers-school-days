@@ -1,0 +1,25 @@
+Copyright (c) Adam Hooper, 2002
+
+cards.c -- The Story:
+
+One night, at a party where one lucky person was turning 26,
+some innocent individual joked that said person was "half a
+deck of cards". And then it happened: An evil madman asked,
+"Ah, but what's the probability that in that half a deck lie
+all four aces"?
+
+At first, people started blathering about 50%. But that was
+easily proven wrong, with the simple question, "Okay, then
+what's the probability that 2 and only 2 cards are aces?".
+
+Statistics has an answer: (26 choose 4) / (52 choose 4), which
+amounts to about 5.5%. But it's hard to take this number on
+faith alone -- proof is needed.
+
+This program simulates drawing 26 cards from a deck and decides
+how many of them are aces. And it does it again and again
+and again. It's pretty fast, but rand() really slows it down;
+it managed 1,000,000 tests in under 7 minutes CPU time on my
+Athlon XP 1600+.
+
+Usage: run <number of tests>

@@ -1,0 +1,44 @@
+\documentclass[12pt]{article}
+\pagestyle{empty}
+\begin{document}
+At $n=1$, the statement is obviously true.
+
+At $n=2$, 
+$
+{\left[ \begin{array}{cc}
+	0 & 1 \\
+	1 & 1 \end{array} \right]}^2
+=
+\left[ \begin{array}{cc}
+	1 & 1 \\
+	1 & 2 \end{array} \right]
+$
+, which agrees with the formula.
+
+Next, it is straightforward to prove the general case, when $n>2$:
+
+\begin{eqnarray*}
+{\left[ \begin{array}{cc}
+	0 & 1 \\
+	1 & 1 \end{array} \right]}^n
+&=& 
+\left[ \begin{array}{cc}
+	f_{n-2}	&	f_{n-1} \\
+	f_{n-1}	&	f_n \end{array} \right]
+\left[ \begin{array}{cc}
+	0 & 1 \\
+	1 & 1 \end{array} \right]
+\\
+&=&
+\left[ \begin{array}{cc}
+	f_{n-1}	&	f_{n-1} + f_{n-2} \\
+	f_n	&	f_{n+1} \end{array} \right]
+\\
+&=&
+\left[ \begin{array}{cc}
+	f_{n-1}	&	f_n \\
+	f_n	&	f_{n+1} \end{array} \right]
+\end{eqnarray*}
+
+...which concludes the proof.
+\end{document}

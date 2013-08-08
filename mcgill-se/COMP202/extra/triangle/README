@@ -1,0 +1,74 @@
+Inspiration: Daniel Mankarios, Sunday, November 16, 2003 12:36pm
+
+And I quote:
+
+>Hello boys and girls
+>I have 2 programming challenges for you today.
+>I had done these challenges a while back ago so I still have the answers.
+>
+>I thought it would be interesting to see how long it takes some of you
+>to crack them :)
+>
+>
+>The first one is more of a logic challenge
+>It consists of a triangle of random numbers, enclosed in a text file
+>with the following format:
+>
+>76 
+>91 61 
+>21 57 94 
+>13 14 32 74 
+>
+>etc etc
+>
+>The last line of the triangle contains 200 numbers
+>
+>What is the challenge?  Find the largest sum possible if you add up the
+>numbers from the top to the bottom of the triangle with the following
+>restriction:
+>From any given number, you can only go down to the immediate left or
+>down to the immediate right.
+>
+>Meaning, if you were to re-arrange the triangle like so:
+>
+>    76 
+>   91 61 
+>  21 57 94 
+>13 14 32 74 
+>
+>The possible paths are: 
+>76+91+21+13
+>76+91+21+14
+>76+91+57+14
+>76+91+57+32
+>76+61+57+14
+>76+61+57+32
+>76+61+94+32
+>76+61+94+74
+>
+>
+>Your program should compute the path with the highest sum and tell you
+>(or print out) that sum.
+>
+>Hint: You might need to lookup file-input in java, possibly from the
+>java tutorial on the sun site.
+>
+>Link to challenges: http://www.cs.mcgill.ca/~dmanka/challenges.html
+
+Rationale:
+
+Recursion will not work! It takes too long and duplicates calculations.
+
+Instead, think backward: solve the triangle from the bottom up. Imagine a 2-row
+triangle:
+
+   num1
+num2  num3
+
+To reduce it, set num1 to be num1 + (highest between num2 and num3).
+
+So, think of the 199th row as a long line of these rows. Simplify each one, and
+the triangle will suddenly be only 199 rows long. Then, repeat. Eventually, the
+entire triangle will be reduced to a single row of 1 number: that's the answer.
+
+There's no real reason for using glib. it's just nice to get used to.

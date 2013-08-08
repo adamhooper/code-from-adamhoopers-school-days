@@ -1,0 +1,25 @@
+> (load "q3.scm")
+> (next-survivor 1 9)
+7
+> (next-survivor 2 9)
+7
+> (next-survivor 3 9)
+7
+> (next-survivor 4 9)
+7
+> (next-survivor 5 9)
+7
+> (next-survivor 6 9)
+7
+> (next-survivor 7 9)
+1
+> (next-survivor 8 9)
+1
+> (next-survivor 9 9)
+1
+> (survivors 9)
+(1 7)
+> (survivors 11)
+(2 7)
+> (survivors 15)
+(5 14)

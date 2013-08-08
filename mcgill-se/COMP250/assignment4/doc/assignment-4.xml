@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+	<articleinfo>
+		<title>COMP250 Assignment 4</title>
+
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address>
+					<otheraddr>McGill ID: 260055737</otheraddr>
+					<email>adam.hooper@mail.mcgill.ca</email>
+				</address>
+			</affiliation>
+		</author>
+	</articleinfo>
+	<sect1>
+		<title>Finding a Path</title>
+		<para>The problem in this assignment is very straightforward: solve the Hi-Q puzzle game.</para>
+		<para>The Hi-Q puzzle is a typical board game: at each turn there is a finite number of possible moves, each of which leads to a new board configuration. At that next turn, there is another finite number of possible moves, which leads to further permutations. With the Hi-Q puzzle, this sequence can end in two ways: either a solution is found (meaning only one peg remains on the board) or a particular configuration has no more possible moves.</para>
+		<para>The simplest method of solving the problem is quite clear: simply enumerate all possible permutations and pick the one which leads to a solution. This is very simple, but is also very slow, so important optimizations are needed, which will be discussed shortly.</para>
+		<para>This method of solving the problem can be thought of as traversing a tree until a desirable node is found. We don't need to explore the <emphasis>entire</emphasis> tree; we only need to explore enough to find one desired node, which we know is at the very bottom of a tree of depth 31. Naturally, depth-first search is by far the more appropriate algorithm.</para>
+		<para>In my code, this depth-first search is expressed as recursion: From a given configuration <literal>A</literal>, <literal>N</literal> possible moves are found, leading to <literal>N</literal> possible board configurations. My code will choose the first of these combinations, label it <literal>B</literal>, and begin the process again. If <literal>B</literal> has only one peg in it, it's a solution.</para>
+	</sect1>
+	<sect1>
+		<title>Optimizations</title>
+		<para>As we'll see later, there are several million possible board combinations. While a straightforward depth-first search will not have to explore all of these combinations, it will still have to examine plenty of them. What methods make this faster?</para>
+		<sect2>
+			<title>Memory Management</title>
+			<para>As one optimization, we are asked to implement memory management -- i.e., re-use existing HiQ board configurations we're finished with for new calculations, instead of creating new ones and letting the garbage collector clean up the old ones.</para>
+			<para>This is hardly an optimization; it's just a code uglifier. Java's garbage collector is efficient and is hardly the bottleneck in this program. Tests with and without memory management with my program showed that my extra code for dealing with memory decreased running time by under 15%. Nevertheless, since the question asks for it, I did it.</para>
+			<para>To implement memory management, I created a <classname>Factory</classname> class, which stores internally a <classname>Stack</classname> of recycled-but-unused HiQ board configurations. The <methodname>getBoard</methodname> method returns the top board configuration from the stack, or creates a new one if the stack is empty. The <methodname>recycle</methodname> method pushes an unused board configuration onto the stack. Finally, the <methodname>clone</methodname> method uses <methodname>getBoard</methodname> to return a new board configuration, but copies the existing board configuration that's passed as an argument.</para>
+			<para>So instead of typing <literal>new MyHiQ ()</literal> in my code, I simply type <literal>factory.getBoard ()</literal> or <literal>factory.clone (hiq)</literal>.</para>
+		</sect2>
+		<sect2>
+			<title>Caching</title>
+			<para>Caching is by far the more important optimization. The concept is simple: if the code arrives at a board configuration it has already seen, it simply doesn't explore that branch of the tree. This breaks the strict depth-first search definition, since the code traverses multiple nodes of the same level to detect duplicates.</para>
+			<para>A separate store of board configurations is used; in my code, I made it a <classname>java.util.TreeSet</classname>. The <classname>TreeSet</classname> is a red-black optimized binary search tree; insertions and searches are performed in O(log n) time. What's more, the <classname>TreeSet</classname> never allows duplicates. When its <methodname>add</methodname> method is called with an object which <methodname>equals ()</methodname> an already-present object, it will return <literal>false</literal>. This is perfect, since in this particular program insertion <emphasis>and</emphasis> searching are performed together in a single pass.</para>
+		</sect2>
+		<sect2>
+			<title>Hashing and Reorienting</title>
+			<para>So, what should we insert into our <classname>TreeSet</classname> cache of board configurations? Intuitively we should insert the board configurations themselves. But this would not be all that useful.</para>
+			<para>Consider the first four possible moves on a weight-32 board. They are all rotations of each other. Thus, we can see clearly that if one of those four board configurations has a solution, the other three do as well: all the moves in the solution would simply need to be rotated or reflected.</para>
+			<para>For any given board configurations, there are seven <emphasis>similar</emphasis> board configurations. These are rotations by 90, 180 and 270 degrees, and reflections about the 1-31, 13-19, 8-24 and 22-10 axes.</para>
+			<para>My <classname>MyHiQ</classname>.<methodname>hash</methodname> method will output a <literal>long</literal> integer which is guaranteed to be the same across all similar configurations and unique across all non-similar configurations. It's quite simple, really. Since a board configuration is stored internally as a <literal>long</literal> integer anyway, the <methodname>hash</methodname> method just rotates and reflects the board configuration to make up the set of all eight similar board combinations, and picks the maximum of those <literal>long</literal> integer representations.</para>
+			<para>Inserting the hash into the cache instead of the board configuration itself yeilds the greatest benefit performance-wise. It's the difference between several days' worth of computation and three seconds'.</para>
+		</sect2>
+	</sect1>
+	<sect1>
+		<title>Data Representation</title>
+		<para>As hinted earlier, my <classname>MyHiQ</classname> class, which stores board configurations, stores its data as a <literal>long</literal>. And it never extracts that data into an array; instead, it uses Java's bitwise operators. This is seen most prominently in <classname>MyHiQ</classname>.<methodname>findMoves</methodname>, which examines the pegs in all directions surrounding each peg.</para>
+		<para>The <methodname>findMoves</methodname> sticks the moves it's found into a 50×3 <literal>byte</literal> array. The 50 is an arbitrary number, based on the assumption that no board configuration will have over 49 different possible moves. The 3 <literal>byte</literal> integers (which will always be between 0 and 32) represent the peg which will jump, the peg to be jumped, and the space where the peg will land. Since the moves array is 50 moves long but not every board configuration has exactly 50 moves (in fact, none do), there is a <literal>-1</literal> inserted after all valid moves, which indicates the end of the list.</para>
+		<para>The <classname>Solver</classname> class itself holds 32 of these 50×3 arrays: one for each board weight. This array is class-level and not method-level to avoid creating and deleting arrays constantly. It's 32 levels deep because the <methodname>step</methodname> method can be running up to 32 instances at once (because of recursion).</para>
+	</sect1>
+	<sect1>
+		<title>Code</title>
+		<para>What's left to explain? Here is a listing of all my code.</para>
+		<sect2>
+			<title><filename>MyHiQ.java</filename></title>
+			<programlisting><xi:include href="../src/MyHiQ.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		</sect2>
+		<sect2>
+			<title><filename>Factory.java</filename></title>
+			<programlisting><xi:include href="../src/Factory.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		</sect2>
+		<sect2>
+			<title><filename>Solver.java</filename></title>
+			<programlisting><xi:include href="../src/Solver.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		</sect2>
+		<sect2>
+			<title><filename>Main.java</filename></title>
+			<programlisting><xi:include href="../src/Main.java" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude"/></programlisting>
+		</sect2>
+	</sect1>
+	<sect1>
+		<title>Answer</title>
+		<para>Below is the program's output:</para>
+		<screen><prompt>$ </prompt><userinput>java Main</userinput>
+<computeroutput>14->16, 3->15, 5->3, 6->8, 20->6, 9->7, 6->8, 23->9, 17->5, 9->7, 0->8, 2->0, 15
+->3, 0->8, 7->9, 21->23, 30->22, 32->30, 12->10, 9->11, 26->12, 12->10, 28->16, 
+5->17, 17->15, 15->27, 30->22, 25->23, 22->24, 29->17, 18->16</computeroutput></screen>
+		<para>The program takes about three seconds to run.</para>
+	</sect1>
+	<sect1>
+		<title>Bonus Question 1</title>
+		<para>We're asked to find a solution in which the final configuration has a peg in the center position. My above <classname>Solver</classname> class does this explicitly, and so the solution path mentioned above is a valid answer to this question.</para>
+		<para>As we'll see later, though, the <emphasis>only</emphasis> possible solutions to this puzzle will place the peg at either the center or one of the edges (1, 19, 31 or 13). Thinking backwards, we know that the previous two pegs must have been lined up between the edges and the center. Therefore, no matter <emphasis>what</emphasis> path was found, it is trivial to simply replace the final step if necessary and make the solution end on the center peg.</para>
+	</sect1>
+	<sect1>
+		<title>Bonus Question 2</title>
+		<para>We're asked to find the total <emphasis>number</emphasis> of solutions ending on each peg.</para>
+		<para>This is a perfect application of a breadth-first search, since we now have to discover the entire tree. However, important optimizations are necessary:</para>
+		<para>Obviously, we need to make one critical modification to the <classname>MyHiQ</classname> class: we need to store the number of paths which lead to that configuration. Or, more precisely, the number of paths which lead to any configuration <emphasis>similar</emphasis> to that one. For example, after one move there will be one board combination with a counter of <literal>4</literal>, since 4 moves lead to the one similar board configuration.</para>
+		<para>This is easy to do: just add another variable to the <classname>MyHiQ</classname> class, storing the number of possible paths to that configuration. If the <classname>BonusSolver</classname> detects a given board configuration has a duplicate in its cache, it will increment the cached <classname>MyHiQ</classname>'s number of paths by the number of paths in the given board.</para>
+		<sect2>
+			<title>Optimizations</title>
+			<para>As we travel down the tree, we never need to look back upwards. Forgetting the data above (i.e., closer to the root) frees up loads of memory.</para>
+			<para>As with the hashing and caching used in the main question, not all combinations must be stored; similar ones can be ignored (almost). Since we don't even <emphasis>care</emphasis> what the actual board configurations are as long as we get the right answer, it's easiest to <methodname>reorient</methodname> the board completely instead of using a hash.</para>
+			<para>A <classname>TreeSet</classname> is used as a cache again, but slightly differently. The <classname>BonusSolver</classname> keeps track of two lists: One (a <classname>Stack</classname>) of all <emphasis>current</emphasis> board configurations, and one (a <classname>TreeSet</classname>) of all <emphasis>next</emphasis> board configurations. This is different from a straight breadth-first search: since it doesn't matter what any node's parent was, we forget that data and bundle them all in the same set. Once we've explored the entire set of next board combinations, we call <emphasis>that</emphasis> set the new list of current board configurations and repeat the process.</para>
+		</sect2>
+		<sect2>
+			<title>Non-Optimizations</title>
+			<para>I tried many things to make my program faster. By profiling, it's clear to see that the <classname>TreeSet</classname> insertion and searching (not to mention <classname>MyHiQ</classname>.<methodname>compareTo</methodname>) are by far the most time-consuming methods. I implemented a minimal <classname>TreeSet</classname> of my own, using the red-black algorithm that Java's does. I even made a <classname>TreeNodeFactory</classname> akin to the <classname>Factory</classname> class for <classname>MyHiQ</classname> above. My personal tree gave no performance benefit compared to Java's. (My red-black implementation was quite a bit slower; and my straightforward binary tree doesn't scale nearly as well.) Using a Factory wrapper class for <classname>MyTreeNode</classname>s significantly <emphasis>slowed down</emphasis> the program.</para>
+			<para>Because I prefer simplicity, I removed the <classname>MyHiQ</classname>'s <classname>Factory</classname> object described in my original answer as well, because it gives no performance benefit. The garbage collector deletes 20 MB worth of data every second, but it's plenty fast and is not the bottleneck.</para>
+			<para>In short, the simplest code is by far the best.</para>
+		</sect2>
+		<sect2>
+			<title>Solution</title>
+			<para>First, I'll point out that Java's default 64MB limit is not enough; I used a 384MB limit when running the program, though it should be fine at anything under 250MB.</para>
+			<para>The program's output:</para>
+			<screen><prompt>$ </prompt><userinput>java -Xmx384M Main</userinput>
+<computeroutput>Weight 31. We're at 1ms
+   1 unique configurations
+Weight 30. We're at 2ms
+   2 unique configurations
+Weight 29. We're at 2ms
+   8 unique configurations
+Weight 28. We're at 61ms
+   39 unique configurations
+Weight 27. We're at 95ms
+   171 unique configurations
+Weight 26. We're at 149ms
+   719 unique configurations
+Weight 25. We're at 222ms
+   2757 unique configurations
+Weight 24. We're at 389ms
+   9751 unique configurations
+Weight 23. We're at 1024ms
+   31312 unique configurations
+Weight 22. We're at 2794ms
+   89927 unique configurations
+Weight 21. We're at 8488ms
+   229614 unique configurations
+Weight 20. We're at 23541ms
+   517854 unique configurations
+Weight 19. We're at 58663ms
+   1022224 unique configurations
+Weight 18. We're at 127842ms
+   1753737 unique configurations
+Weight 17. We're at 239410ms
+   2598215 unique configurations
+Weight 16. We're at 404757ms
+   3312423 unique configurations
+Weight 15. We're at 607301ms
+   3626632 unique configurations
+Weight 14. We're at 800246ms
+   3413313 unique configurations
+Weight 13. We're at 968130ms
+   2765623 unique configurations
+Weight 12. We're at 1090454ms
+   1930324 unique configurations
+Weight 11. We're at 1159652ms
+   1160977 unique configurations
+Weight 10. We're at 1191275ms
+   600372 unique configurations
+Weight 9. We're at 1204270ms
+   265865 unique configurations
+Weight 8. We're at 1209184ms
+   100565 unique configurations
+Weight 7. We're at 1210526ms
+   32250 unique configurations
+Weight 6. We're at 1210909ms
+   8688 unique configurations
+Weight 5. We're at 1210989ms
+   1917 unique configurations
+Weight 4. We're at 1211026ms
+   348 unique configurations
+Weight 3. We're at 1211027ms
+   50 unique configurations
+Weight 2. We're at 1211055ms
+   7 unique configurations
+Weight 1. We're at 1211056ms
+   2 unique configurations
+PRINTING STATE at weight 1
+40861647040079968 times:
+  ···
+  ···
+·······
+···⊗···
+·······
+  ···
+  ···
+0000000000000000000000000000000000000000000000010000000000000000
+40861647040079968 times:
+  ···
+  ···
+·······
+·······
+·······
+  ···
+  ·⊗·
+0000000000000000000000000000000010000000000000000000000000000000
+DONE PRINTING. Total 2 configs</computeroutput></screen>
+			<para>This illustrates one interesting point: there are only 2 unique (i.e., non-similar) board configurations which are solutions. Half of them have the peg in the center. The other half have the peg on a side (hole 1, 19, 31 or 13). By symmetry, it's easy to see that the number of paths which lead to all four configurations (the number found by my program) divided by four is the number of paths to any one of those configurations.</para>
+			<para>So, the magical numbers:</para>
+			<itemizedlist>
+				<listitem><para><literal>10215411760019992</literal> solution paths end on hole <literal>1</literal>.</para></listitem>
+				<listitem><para><literal>10215411760019992</literal> solution paths end on hole <literal>19</literal>.</para></listitem>
+				<listitem><para><literal>10215411760019992</literal> solution paths end on hole <literal>31</literal>.</para></listitem>
+				<listitem><para><literal>10215411760019992</literal> solution paths end on hole <literal>13</literal>.</para></listitem>
+				<listitem><para><literal>40861647040079968</literal> solution paths end on hole <literal>16</literal> (the center hole).</para></listitem>
+				<listitem><para><emphasis>No</emphasis> solution paths lead to any of the other holes.</para></listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+</article>

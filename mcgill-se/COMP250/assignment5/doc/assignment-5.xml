@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- <?xml-stylesheet type="text/xsl" href="fo.xsl"?> -->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article xmlns:xi="http://www.w3.org/2003/XInclude">
+	<articleinfo>
+		<title>COMP250 Assignment 5</title>
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address>
+					<otheraddr>McGill ID 260055737</otheraddr>
+					<email>adam.hooper@mail.mcgill.ca</email>
+				</address>
+			</affiliation>
+		</author>
+	</articleinfo>
+	<sect1>
+		<title>Question 1</title>
+		<para>We were asked to implement a class which does a Heapsort of an array. The class notes outlined the requisite algorithms very clearly; they are implemented in <filename>Sorter.java</filename>.</para>
+		<programlisting><xi:include href="../src/Sorter.java" parse="text"/></programlisting>
+		<para>I wrote a simple test program in <filename>TestHeapsort.java</filename> which sorts all the Strings passed on the command line.</para>
+		<programlisting><xi:include href="../src/TestHeapsort.java" parse="text"/></programlisting>
+		<para>Here is a sample run of the test:</para>
+		<screen><prompt>$ </prompt><userinput>java TestHeapsort a 8 five seven two l pep dee whee pep a</userinput>
+<computeroutput>8
+a
+a
+dee
+five
+l
+pep
+pep
+seven
+two
+whee</computeroutput></screen>
+	</sect1>
+	<sect1>
+		<title>Question 2</title>
+		<para>Question 2 was certainly more difficult. We were asked to determine if two trees from a file are isomorphic. The algorithms were all given (with small mistakes often) so all we had to do was understand them and implement them in Java. Much easier said than done....</para>
+		<para>I made a <classname>Vertex</classname> class to represent tree nodes:</para>
+		<programlisting><xi:include href="../src/Vertex.java" parse="text"/></programlisting>
+		<para>Next, a <classname>Map</classname> class to compile and print the answer when we get it:</para>
+		<programlisting><xi:include href="../src/Map.java" parse="text"/></programlisting>
+		<para>Of course, the main problem was the <classname>RootedTree</classname> class, which implements the algorithms given.</para>
+		<programlisting><xi:include href="../src/RootedTree.java" parse="text"/></programlisting>
+		<para>Finally, I wrote a test program in <filename>TestIsomorphic.java</filename> to ensure success.</para>
+		<programlisting><xi:include href="../src/TestIsomorphic.java" parse="text"/></programlisting>
+		<para>I wrote several test trees to make sure my program was all right. What follows are the test files I used and the results obtained.</para>
+		<screen><prompt>$ </prompt><userinput>cat ../tests/andrei</userinput>
+<computeroutput>root1(a1(c1)(d1))(b1(e1)(f1))
+a2(c2)(d2)(root2(b2(e2)(f2)))</computeroutput>
+<prompt>$ </prompt><userinput>java TestIsomorphic ../tests/andrei</userinput>
+<computeroutput>Tree 1: root1(a1(c1)(d1))(b1(e1)(f1))
+Tree 2: a2(c2)(d2)(root2(b2(e2)(f2)))
+An isomorphism exists:
+{(root1, root2), (b1, a2), (f1, d2), (e1, c2), (a1, b2), (d1, f2), (c1, e2)}</computeroutput>
+<prompt>$ </prompt><userinput>cat ../tests/degenerate</userinput>
+<computeroutput>a
+b</computeroutput>
+<prompt>$ </prompt><userinput>java TestIsomorphic ../tests/degenerate</userinput>
+<computeroutput>Tree 1: a
+Tree 2: b
+An isomorphism exists:
+{(a, b)}</computeroutput>
+<prompt>$ </prompt><userinput>cat ../tests/failure</userinput>
+<computeroutput>a(b(c(d)))
+a(b)(c)(d)</computeroutput>
+<prompt>$ </prompt><userinput>java TestIsomorphic ../tests/failure</userinput>
+<computeroutput>Tree 1: a(b(c(d)))
+Tree 2: a(b)(c)(d)
+The trees are not isomorphic.</computeroutput>
+<prompt>$ </prompt><userinput>cat ../tests/given</userinput>
+<computeroutput>a(b(e(j)(k))(f(l)))(c(g(m))(h))(d(i))
+n(o(r)(s(w)))(p(t))(q(u(x))(v(y)(z)))</computeroutput>
+<prompt>$ </prompt><userinput>java TestIsomorphic ../tests/given</userinput>
+<computeroutput>Tree 1: a(b(e(j)(k))(f(l)))(c(g(m))(h))(d(i))
+Tree 2: n(o(r)(s(w)))(p(t))(q(u(x))(v(y)(z)))
+An isomorphism exists:
+{(a, n), (d, p), (i, t), (c, o), (h, r), (g, s), (m, w), (b, q), (f, u), (l, x),
+(e, v), (k, z), (j, y)}</computeroutput>
+<prompt>$ </prompt><userinput>cat ../tests/mine</userinput>
+<computeroutput>root(dee(bee))(buy(go)(moo))
+zuy(zo)(zoo)(zoot(zee(b0)))</computeroutput>
+<prompt>$ </prompt><userinput>java TestIsomorphic ../tests/mine</userinput>
+<computeroutput>Tree 1: root(dee(bee))(buy(go)(moo))
+Tree 2: zuy(zo)(zoo)(zoot(zee(b0)))
+An isomorphism exists:
+{(root, zoot), (dee, zee), (bee, b0), (buy, zuy), (moo, zoo), (go, zo)}</computeroutput></screen>
+	</sect1>
+</article>

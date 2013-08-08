@@ -1,0 +1,8 @@
+> (load "q3_3-8.scm")
+> (read-eval-print)
+--> setcar(list(1,2,3),3)
+(3 2 3)
+--> setcar(cons(3,4),4)
+(4 . 4)
+--> car(setcar(list(1),4))
+4

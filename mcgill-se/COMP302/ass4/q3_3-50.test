@@ -1,0 +1,46 @@
+> (load "q3_3-50.scm")
+> (read-eval-print)
+--> letrec
+      fact(x) = if zero?(x) then 1 else *(x,(fact sub1(x)))
+    in (fact 6)
+720
+--> let x = 6
+    in letrec
+         fact() = if zero?(x) then 1 else *(x,(fact
+	                                         begin
+						   set x = sub1(x);
+						   x
+						 end))
+       in (fact)
+720
+--> let x = 6
+    in letrec
+         fact() = if zero?(x) then 1 else *(x,(fact
+	                                         begin
+						   set x = sub1(x);
+						   x
+						 end))
+       in begin
+            (fact);
+	    (fact)
+	  end
+1
+--> (proc (t, u, v, w)
+      (proc (a, b)
+        (proc (x, y, z)
+	   begin
+	     set y = 13;
+	     v
+	   end
+	 a b 6)
+       3 v)
+     5 6 7 8)
+13
+--> let b = 3
+        p = proc (x, y)
+	      begin
+	        set x = 4;
+		y
+	      end
+    in (p b b)
+4

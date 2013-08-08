@@ -1,0 +1,21 @@
+The working product is hosted at http://www.cs.mcgill.ca/~ahoope1
+
+There comes a point in any man's career where enough is enough -- no matter
+what the consequences, principles must play a more important role than success.
+
+This point has come in our Assignment 4, in which we were asked to make our web
+page play a sound. Now, to some rediculous demands I have no objections. Ask me
+to kill babies for bonus marks and I'll sharpen my biggest knife post-haste.
+But every man has his breaking point.
+
+I stretched my ethical foundations to their limit in the hopes that I may still
+benefit from that tempting bonus point. In index.html I put some HTML code
+which would trigger the file "hello.wav" to play when one browsed to the page.
+But I could not bring myself to actually upload any file as "hello.wav".
+
+I've unlocked the key to Pandora's box but left the lid tightly shut. With any
+luck, I'll be able to remove this commented code as soon as the assignment has
+been marked; maybe it will disappear from the Internet entirely before it
+causes any harm.
+
+As for the Java clock: I coded a dinky one and put it on the front page. Enjoy.

@@ -1,0 +1,13 @@
+> (load "q8.scm")
+> (shuffle '(a b c d e f g))
+(a e b f c g d)
+> (shuffle (shuffle '(a b c d e f g)))
+(a c e g b d f)
+> (shuffle (shuffle (shuffle '(a b c d e f g))))
+(a b c d e f g)
+> (shuffle-number '(a b c d e f g))
+3
+> (shuffle-number '(a b c d e f g h))
+3
+> (shuffle-number '(a b c d e f g h i))
+6

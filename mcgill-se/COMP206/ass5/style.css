@@ -1,0 +1,103 @@
+html {
+	background-color: #fef;
+	color: black;
+	font-family: sans;
+	margin: .5em;
+}
+
+h1 {
+	background: url(logo.png) no-repeat;
+	font-size: 2em;
+	height: 80px;
+	margin-left: 25px;
+	padding-top: 25px;
+	padding-left: 75px;
+}
+
+input {
+	border: 1px solid black;
+	background-color: white;
+}
+
+input:focus {
+	border: 1px solid #d80101;
+}
+
+object {
+	position: fixed;
+	bottom: 1em;
+	right: 1em;
+}
+
+/* {{{ Catalog */
+
+table {
+	background-color: #d9bc7a;
+	border-collapse: collapse;
+}
+
+th {
+	background-color: #e0c995;
+	padding: .2em;
+}
+
+tr {
+	border: 1px solid black;
+}
+
+td {
+	padding: .3em;
+}
+
+td.purchase {
+	text-align: center;
+}
+
+td.qty {
+	vertical-align: bottom;
+}
+
+table img {
+	float: left;
+	margin-right: 1em;
+}
+
+table p {
+	margin-right: 1em;
+}
+
+table h2 {
+	margin-bottom: .2em;
+	border-bottom: 1px solid black;
+}
+
+/* }}} */
+
+/* {{{ Login page */
+
+.login {
+	text-align: center;
+}
+
+.login form {
+	border: 1px solid black;
+	background-color: #d9bc7a;
+	text-align: center;
+	margin: 1em;
+	padding: 1em;
+}
+
+.login form p {
+	margin: .3em;
+}
+
+/* }}} */
+
+div.unavailable {
+	margin: 1em;
+	padding: .5em;
+	border: 1px dotted red;
+}
+div.unavailable ul {
+	list-style: none;
+}

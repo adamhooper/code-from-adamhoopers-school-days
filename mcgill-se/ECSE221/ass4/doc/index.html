@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ECSE221 Assignment 4</title><link rel="stylesheet" href="style.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.64.1" /></head><body><div class="article" lang="en" xml:lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="id2400058"></a>ECSE221 Assignment 4</h1></div><div><div class="author"><h3 class="author"><span class="firstname">Adam</span> <span class="surname">Hooper</span></h3><div class="affiliation"><div class="address"><p><br />
+					<span class="otheraddr">McGill ID: 260055737</span><br />
+					<tt class="email">&lt;<a href="mailto:adam.hooper@mail.mcgill.ca">adam.hooper@mail.mcgill.ca</a>&gt;</tt><br />
+				</p></div></div></div></div></div><div></div><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2440500"></a>C Prototype</h2></div></div><div></div></div><p>We were asked to write a program in MIPS assembly which adds two input numbers as strings and prints their sum. Especially since I already did this in Assignment 1, I decided to prototype my assembly program in C.</p><p>In the question, we were asked to write a function with prototype <tt class="code">void addBCD(char *addend, char *augend, char *sum)</tt>. This implies that the <tt class="literal">sum</tt> pointer would already have memory allocated to it. I decided that it would be easier to allocate memory inside my <tt class="function">addBCD</tt> function than from the caller, so my C prototype looks slightly different in that respect.</p><p>I already wrote up how this program works, so I'll copy that from my first assignment:</p><div class="blockquote"><blockquote class="blockquote"><p>Basically, the program calculates the maximum length of the string to return, and fills in the numbers from right to left. It computes one digit at a time: the rightmost digits of <tt class="varname">i1</tt> and <tt class="varname">i2</tt> determine the rightmost digit of <tt class="varname">ret</tt> and <tt class="varname">carry</tt>; after which the second-rightmost digits of both <tt class="varname">i1</tt> and <tt class="varname">i2</tt> and <tt class="varname">carry</tt> determine the second-rightmost digit of <tt class="varname">ret</tt> and a new value for <tt class="varname">carry</tt>, and so on. Once <tt class="varname">i1_p</tt> travels to the left of the first digit in <tt class="varname">i1</tt>, <tt class="varname">i1</tt> has been completely added to <tt class="varname">ret</tt>; same goes for <tt class="varname">i2</tt>.</p></blockquote></div><p>Since the input and output methods in SPIM are very different from in C, I didn't bother to prototype them.</p><p>What follows is the C code I used as a reference.</p><pre class="programlisting">#include &lt;stdlib.h&gt;
+
+/* Evaluates a and b more than once */
+#define max(a,b) ((a) &gt; (b) ? (a) : (b))
+
+char *
+my_add (char *i1,
+	char *i2)
+{
+	char *ret, *ret_p;
+	char *i1_p = i1;
+	char *i2_p = i2;
+	char len;
+	char carry = 0;
+	char sum;
+
+	while (*i1_p) ++i1_p;
+	while (*i2_p) ++i2_p;
+
+	len = 1 + max (i1_p - i1, i2_p - i2); /* 1 for potential carry */
+
+	ret = calloc (len + 1, sizeof (char)); /* 1 for NULL */
+
+	ret_p = ret + len;
+
+	while (--ret_p &gt;= ret)
+	{
+		sum = 0;
+
+		if (carry)
+		{
+			sum += carry;
+			carry = 0;
+		}
+
+		if (--i1_p &gt;= i1)
+		{
+			sum += *i1_p - '0';
+		}
+
+		if (--i2_p &gt;= i2)
+		{
+			sum += *i2_p - '0';
+		}
+
+		if (sum &gt; 9)
+		{
+			carry = 1;
+			sum -= 10;
+		}
+
+		*ret_p = sum + '0';
+	}
+
+	return ret;
+}
+</pre></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2487960"></a>Assembly Code</h2></div></div><div></div></div><p>I translated my adding code pretty much line-for-line. Instead of using <tt class="function">malloc</tt> to dynamically allocate memory, I used SPIM's <tt class="function">sbrk</tt> system call.</p><p>The input section was obviously all-new, though; and as I mentioned before, it wasn't prototyped in C. I figure it's well-commented enough to explain my every move, though.</p><p>One thing that slightly annoyed me is that I couldn't think of a simple way to dynamically allocate memory for the input strings. I suppose I could have dynamically grown the strings character-by-character using <tt class="function">sbrk</tt> to allocate a single byte at a time, but this method didn't appeal to me. Instead, I allocated 1024 bytes per input string. This means that my program can't add 1024-digit or higher numbers. What a shame.</p><pre class="programlisting">	.text
+
+#####
+# addBCD: add two arbitrary-length string representations of decimal numbers
+#
+# Assigned registers:
+#	$a0: Pointer to first null-terminated string
+#	$a1: Pointer to second null-terminated string
+#	$a3: output
+#	$t0: "moving" pointer over $a0
+#	$t1: "moving" pointer over $a1
+#	$t3: "moving" pointer over $a3
+#	$t4: Length of result (possibly overestimated by 1)
+#	$t5: carry (either 0 or 1)
+#	$t6: sum (between 0 and 18)
+#	$t7: scratch
+#	$t8: scratch
+#####
+
+addBCD:
+
+#####
+# Save context of caller
+#####
+
+	addi	$sp, $sp, -28		# Allocate space on stack
+	sw	$t0, 0($sp)
+	sw	$t1, 4($sp)
+	sw	$t3, 8($sp)
+	sw	$t4, 12($sp)
+	sw	$t5, 16($sp)
+	sw	$t6, 20($sp)
+	sw	$t7, 24($sp)
+
+#####
+# Main procedure body
+#####
+
+# Move $t0 to end of $a0
+	move	$t0, $a0
+move_t0:
+	addi	$t0, 1			# Move forward a byte
+	lb	$t7, 0($t0)		# Load the character we're pointing to
+	bnez	$t7, move_t0		# If it's not null, move forward again
+
+# Move $t1 to end of $a1
+	move	$t1, $a1
+move_t1:
+	addi	$t1, 1			# Move forward a byte
+	lb	$t7, 0($t1)		# Load the character we're pointing to
+	bnez	$t7, move_t1		# If it's not null, move forward again
+
+# Calculate result length in $t4
+	sub	$t7, $t0, $a0		# $t7: Length of $a0 string
+	sub	$t8, $t1, $a1		# $t8: Length of $a1 string
+	move	$t4, $t7		# Assume $t7 is the largest
+	bgt	$t7, $t8, len_done	# If it's not...
+	move	$t4, $t8		# ... then $t8 is the largest
+len_done:
+	addi	$t4, $t4, 1		# Add 1: potential carried "1" of result
+
+# Allocate memory for $a3, the result, using sbrk system call
+	move	$t7, $a0		# Save $a0, we need it for syscall
+	addi	$a0, $t4, 1		# We need length + 1, for NULL character
+	li	$v0, 9			# sbrk is 9
+	syscall
+	move	$a3, $v0		# Store our result right away
+	move	$a0, $t7		# Restore $a0
+
+# Set $t3 to end of $a3
+	add	$t3, $a3, $t4		# Add length of result to $a3
+	sb	$0, 0($t3)		# Set final character to NULL
+	addi	$t3, $t3, -1		# Point to previous character
+
+# Loop backwards across $a3 (with $t3), adding $t0/$t1 characters
+	li	$t5, 0			# carry = 0
+a3_loop_backwards:
+	li	$t6, 0			# sum = 0
+
+	beqz	$t5, skip_carry		# if carry != 0 (it'll be 1)
+	addi	$t6, $t6, 1		# sum += 1
+	li	$t5, 0			# carry = 0
+skip_carry:
+
+	addi	$t0, $t0, -1		# Move left along $a0
+	blt	$t0, $a0, skip_t0	# If we're done with $a0, skip it
+	lb	$t7, 0($t0)		# Load that into scratch
+	addi	$t7, $t7, -0x30		# Subtract '0'
+	add	$t6, $t6, $t7		# Add it to sum
+skip_t0:
+
+	addi	$t1, $t1, -1		# Move left along $a1
+	blt	$t1, $a1, skip_t1	# If we're done with $a1, skip it
+	lb	$t7, 0($t1)		# Load that into scratch
+	addi	$t7, $t7, -0x30		# Subtract '0'
+	add	$t6, $t6, $t7		# Add it to sum
+skip_t1:
+
+	li	$t7, 10
+	blt	$t6, $t7, skip_carry_1	# If sum &lt; 10, don't add to carry
+	li	$t5, 1			# carry = 1
+	addi	$t6, $t6, -10		# sum -= 10
+skip_carry_1:
+
+	addi	$t6, $t6, 0x30		# sum += '0'
+	sb	$t6, 0($t3)		# Write that to the digit of $a3
+
+	addi	$t3, $t3, -1		# Decrement return value pointer
+	bge	$t3, $a3, a3_loop_backwards
+					# Loop until t3 &lt; a3
+
+#####
+# Restore context
+#####
+
+	lw	$t0, 0($sp)
+	lw	$t1, 4($sp)
+	lw	$t3, 8($sp)
+	lw	$t4, 12($sp)
+	lw	$t5, 16($sp)
+	lw	$t6, 20($sp)
+	lw	$t7, 24($sp)
+	addi	$sp, $sp, 28
+
+	jr $ra				# Return
+
+#####
+# Test Program
+#
+# Ask for two decimals, call addBCD, and print the result
+#
+# Assigned registers:
+#	$a0: Pointer to first number
+#	$a1: Pointer to second number
+#	$a3: Result
+#	$t0: scratch
+#	$t1: scratch
+#	$t2: scratch
+#	$t3: temp storage of $a0
+#	$t4: '0'
+#	$t5: '9'
+#	$t6: '\n'
+#####
+	.globl main
+
+main:
+	li	$t4, 0x30		# '0'
+	li	$t5, 0x39		# '9'
+	li	$t6, 0xa		# '\n'
+
+	# Prepare to load strings
+
+#####
+# Load string 1
+#####
+	li	$v0, 4			# print_string
+	la	$a0, strEnter1
+	syscall				# Ask for first string
+
+	li	$v0, 8			# read_string
+	la	$a0, str1
+	li	$a1, 1024
+	syscall				# Okay, $a0 is now the string
+
+	move	$t0, $a0		# t0 is a temp pointer to the string
+
+main_loop_a0:
+	lb	$t2, 0($t0)		# $t2 = current byte
+	beq	$t2, $t6, main_loop_a0_done	# Loop until we hit '\n'
+	beqz	$t2, main_loop_a0_done	# though NULL would suffice
+
+	bgt	$t2, $t5, error		# Error if byte &gt; '9'
+	blt	$t2, $t4, error		# Error if byte &lt; '0'
+
+	addi	$t0, $t0, 1		# Move to next byte
+	b	main_loop_a0
+
+main_loop_a0_done:
+	sb	$0, 0($t0)		# Store NULL in last byte
+
+	beq	$t0, $a0, error		# Empty string ==&gt; Error
+
+	move	$t3, $a0		# Store $a0 in $t3 for now
+
+#####
+# Load string 2
+#####
+	li	$v0, 4			# print_string
+	la	$a0, strEnter2
+	syscall				# Ask for second string
+
+	li	$v0, 8			# read_string
+	la	$a0, str2
+	li	$a1, 1024
+	syscall				# Okay, $a0 is now string 2
+
+	move	$t0, $a0		# t0 is a temp pointer to the string
+
+main_loop_a1:
+	lb	$t2, 0($t0)		# $t2 = current byte
+	beq	$t2, $t6, main_loop_a1_done	# Loop until we hit '\n'
+	beqz	$t2, main_loop_a1_done	# though NULL would suffice
+
+	bgt	$t2, $t5, error		# Error if byte &gt; '9'
+	blt	$t2, $t4, error		# Error if byte &lt; '0'
+
+	addi	$t0, $t0, 1		# Move to next byte
+	b	main_loop_a1
+
+main_loop_a1_done:
+	sb	$0, 0($t0)		# Store NULL in the last byte
+
+	beq	$t0, $a0, error		# Empty string ==&gt; Error
+
+#####
+# Call addBCD
+#####
+	move	$a1, $a0		# Move string 2 to $a1 for addBCD call
+	move	$a0, $t3		# Move string 1 back where it belongs
+
+	jal	addBCD
+
+#####
+# Generate output
+#####
+	lb	$t1, 0($a3)		# Load first byte of return value
+	addi	$t1, $t1, -0x30		# subtract '0'
+	bnez	$t1, main_skip_carry	# If first char is '0'...
+	addi	$a3, $a3, 1		# ... there was no carry. Skip it.
+main_skip_carry:
+
+	li	$v0, 4
+
+	syscall				# First number
+	la	$a0, strPlus
+	syscall				# " + "
+	move	$a0, $a1
+	syscall				# Second number
+	la	$a0, strEquals
+	syscall				# " = "
+	move	$a0, $a3
+	syscall				# Result
+	la	$a0, strNl
+	syscall				# "\n"
+exit:
+	li	$v0, 10
+	syscall				# Exit
+
+error:
+	la	$a0, strInvalidInput
+	li	$v0, 4
+	syscall				# Print an error message
+	b	exit
+
+#####
+# Data segment
+#####
+	.data
+
+strEnter1:		.asciiz "Enter first number: "
+str1:			.space	1024
+strEnter2:		.asciiz "Enter second number: "
+str2:			.space	1024
+strInvalidInput:	.asciiz	"Invalid input\n"
+strPlus:		.asciiz	" + "
+strEquals:		.asciiz	" = "
+strNl:			.asciiz	"\n"
+</pre></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2488018"></a>Tests</h2></div></div><div></div></div><p>Below is the output from a few of my tests:</p><pre class="screen"><tt class="prompt">Enter first number: </tt><b class="userinput"><tt>0</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>0</tt></b>
+<tt class="computeroutput">0 + 0 = 0</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt>0</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>1</tt></b>
+<tt class="computeroutput">0 + 1 = 1</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt>1</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>1</tt></b>
+<tt class="computeroutput">1 + 1 = 2</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt>9</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>9</tt></b>
+<tt class="computeroutput">9 + 9 = 18</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt>9999999999</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>1</tt></b>
+<tt class="computeroutput">9999999999 + 1 = 10000000000</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt>123456789</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>987654321</tt></b>
+<tt class="computeroutput">123456789 + 987654321 = 1111111110</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt>1</tt></b>
+<tt class="prompt">Enter second number: </tt><b class="userinput"><tt>a</tt></b>
+<tt class="computeroutput">Invalid input</tt>
+
+<tt class="prompt">Enter first number: </tt><b class="userinput"><tt></tt></b>
+<tt class="computeroutput">Invalid input</tt></pre></div></div></body></html>

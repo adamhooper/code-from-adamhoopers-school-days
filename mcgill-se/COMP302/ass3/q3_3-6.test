@@ -1,0 +1,10 @@
+> (load "q3_3-6.scm")
+> (read-eval-print)
+--> minus(+(minus(5),9))
+-4
+--> minus(3)
+-3
+--> minus(-(0,5))
+5
+--> +(minus(3),3)
+0

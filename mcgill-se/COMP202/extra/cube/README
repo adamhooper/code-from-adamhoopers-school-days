@@ -1,0 +1,38 @@
+In answer to a problem by Daniel Mankarios on Sunday, November 16, 2003 12:37pm.
+
+In his words:
+
+>The second challenge is easier logic-wise, but a bit harder programming
+>wise.
+>
+>
+>The file cube.txt contains a multitude of random letters either being
+>A,B,C or D.
+>It is arranged in sheets of 100 by 100 letters, and there are 100 sheets
+>thus forming..surprise! a cube!
+>The way the cube should be visualised is that the first sheet in the
+>file is the first face of the cube in the x-y plane while each
+>additional sheet is appended in the minus z direction.
+>
+>
+>Now that you have visualised the cube, 
+>your challenge is to compute the number of occurences of the sequence
+>'ABCD' in the cube.
+>
+>It can occur in any vertical, horizontal or diagonal direction within
+>the cube, as long as the letters follow each other.
+>
+>
+>Hint: Arrays? Knowledge about file input is also required.
+>
+>
+>
+>Good luck!  You can pm me if you think you know the answer to either one
+>and I will tell you if it is right or not!
+>
+>Link to challenges: http://www.cs.mcgill.ca/~dmanka/challenges.html
+
+So. I wrote it out in Python because I wanted to teach myself more about Python.
+
+It's quite straightforward. I found that Python lets me worry about logic and
+not syntax: the code is tiny! Just over 3 screens full of code for the entire thing.

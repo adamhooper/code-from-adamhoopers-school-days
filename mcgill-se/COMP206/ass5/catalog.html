@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+ <title>Product Catalog</title>
+ <link rel="stylesheet" type="text/css" href="style.css"/>
+ <meta name="Author" content="Adam Hooper"/>
+</head>
+<body>
+ <h1>Potions Incorporated</h1>
+ <p>Here is our product catalog. We are confident you will find something which satisfies.</p>
+ <p>You may also return to <a href="index.html">our front page</a>.</p>
+ <form method="get" action="instock.pl">
+  <table>
+   <thead>
+    <tr>
+     <th>Purchase?</th>
+     <th>Description</th>
+     <th>Qty</th>
+   </thead>
+   <tbody>
+    <tr>
+     <td class="purchase">
+      <input type="checkbox" name="purchase_10231"/>
+     </td>
+     <td class="description">
+      <h2>Love Potion Number 9</h2>
+      <img src="images/10231.png" alt="Love Potion Number 9"/>
+      <p>So famous it's become a major motion picture! Love Potion Number 9 kicked off Potions Incorporated's success. Give it to your dream mate and you will never be lonely again!</p>
+     </td>
+     <td class="qty">
+      <input type="text" size="5" name="qty_10231" value="0"/>
+     </td>
+    </tr>
+    <tr>
+     <td class="purchase">
+      <input type="checkbox" name="purchase_13234"/>
+     </td>
+     <td class="description">
+      <h2>Laugh Potion</h2>
+      <img src="images/13234.png" alt="Laugh Potion"/>
+      <p>Depressed? The laugh potion will assuage your despair. For best effect, administer our Laugh Potion to somebody who tries very hard to be constantly serious.</p>
+     </td>
+     <td class="qty">
+      <input type="text" size="5" name="qty_13234" value="0"/>
+     </td>
+    </tr>
+    <tr>
+     <td class="purchase">
+      <input type="checkbox" name="purchase_16231"/>
+     </td>
+     <td class="description">
+      <h2>Constipation Clearer</h2>
+      <img src="images/16231.png" alt="Constipation Clearer"/>
+      <p>Cheap, quick, and effective. Be sure to stay home for at least an hour after administering.</p>
+     </td>
+     <td class="qty">
+      <input type="text" size="5" name="qty_16231" value="0"/>
+     </td>
+    </tr>
+   </tbody>
+  </table>
+  <p>
+   <input type="submit" value="Update Quantities"/>
+   <input type="reset" value="Reset Quantities"/>
+  </p>
+ </form>
+ </body>
+</html>

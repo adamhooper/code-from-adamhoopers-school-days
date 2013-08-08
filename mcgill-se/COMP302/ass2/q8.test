@@ -1,0 +1,17 @@
+> (load "q8.scm")
+> (define tree-a (interior-node 'a (leaf-node 2) (leaf-node 3)))
+> (define tree-b (interior-node 'b (leaf-node -1) tree-a))
+> (define tree-c (interior-node 'c tree-b (leaf-node 1)))
+> (max-interior tree-b)
+a
+> (max-interior tree-c)
+c
+> (max-interior tree-a)
+a
+> (define tree-d (interior-node 'd tree-a tree-c))
+> (max-interior tree-d)
+d
+> (max-interior (interior-node 'a (interior-node 'b (leaf-node -5) (interior-node 'c (leaf-node 6) (leaf-node 11))) (interior-node 'd (leaf-node 5) (leaf-node 5))))
+a
+> (max-interior (interior-node 'a (interior-node 'b (leaf-node -5) (interior-node 'c (leaf-node 6) (leaf-node 11))) (interior-node 'd (leaf-node 5) (leaf-node -5))))
+c

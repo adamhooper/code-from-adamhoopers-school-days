@@ -1,0 +1,27 @@
+There's not much to say about this assignment. It was very straightforward.
+
+One thing annoyed me. I made a totally generic, thread-safe queue implementation
+and then had to go make it ugly because our assignment needs to print out the
+buffer number. That should explain the need for QueueEntry.
+
+Since the queue is separate from the rest of the program, there's no way to
+print the message "client sleeps", since the queue implementation does not
+print anything. Judging by the sample trace on the ECSE427 website, though, this
+is not a problem.
+
+What else to say? Run "make" to generate "print". Run "print" without arguments
+and it'll print what you need to type. On mimi.cs.mcgill.ca it compiles with
+warnings, but those warnings are in system libraries and are outside my control.
+
+Files:
+
+README: this file
+Makefile: the makefile
+client-thread.[ch]: Client thread implementation
+printer-thread.[ch]: Printer thread implementation
+job.[ch]: Job object (just a wrapper around an integer so we can insert it in
+	  a QueueEntry)
+queue.[ch]: thread-safe queue implementation
+print.c: main program
+test-run-with-3-3-3: A sample session. Run with 3 printers, 3 clients and
+		     a buffer of size 3. Run for about a minute.

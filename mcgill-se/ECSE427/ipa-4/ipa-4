@@ -1,0 +1,125 @@
+1.
+
+  a. The command in question is sfs_fread(int fid, char *buf, int length).
+
+    - Look up the file descriptor (fdescT) indicated by fid. The fdescT contains
+      variables to store the read block number and offset. It also contains
+      "root_fat", the index into root_dir which points to the proper fileT.
+    - Look up the file (fileT) indicated by the fdescT's "root_fat" from
+      "root_dir", the main directory.
+    - Find "count", how many blocks we are into the file, and
+      "size_read_so_far", the number of bytes already read. This is done by
+      traversing FAT, which stores all blocks of the file in a chain. Use this
+      variable to decrease "length" in case it is big enough to read past the
+      end of the file.
+    - Until we have read "length" bytes:
+      - Read the current block into "mem_block" using "safe_dRead()".
+      - Starting at "rd_off" from the fdescT, copy the bytes from "mem_block"
+        to "buf". Increment "rd_off" by the amount copied.
+      - If we reach the end of a block, set "rd_off" to 0, increment "rd_blk",
+        find the next block to read in the FAT, and loop.
+    - Return the number of bytes read.
+
+  b. The command in question is sfs_write(int fid, char *buf, int length).
+
+    - Look up the file descriptor (fdescT) indicated by fid. The fdescT contains
+      variables to store the write block number and offset. It also contains
+      "root_fat", the index into root_dir which points to the proper fileT.
+    - Count the number of extra blocks we will need after filling the current
+      block to satisfy "length". Do this by iterating over FAT, looking at the
+      chain of free blocks.
+    - Look up the file (fileT) indicated by the fdescT's "root_fat" from
+      "root_dir", the main directory.
+    - Read the current contents of the target block into "mem_block" (in case
+      we're only writing to the second half of this block).
+    - Until we have written "length" bytes:
+      - If we're about to write off the edge of the file ("wr_off" == BLOCK_SIZE
+        and so we need a new block, but we don't have one), find another empty
+	block using "extract_free_blk()" and update the FAT table to chain it
+	after the current block.
+      - Starting at "wr_off" from the fdescT, copy the bytes from "buf" to
+        "mem_block". Increment "wr_off" by the amount copied.
+      - Write "mem_block" to disk, using "safe_dWrite()".
+      - If we reach the end of a block, loop.
+    - Update the filesize in the fileT. Write the modified fileT back to disk.
+    - Return the number of bytes written.
+
+2. The filesystem allocates blocks using a file allocation table (FAT). The
+   first block on the pseudo-disk contains the FAT, which is essentially a table
+   of shorts. Each entry in the FAT points to the *next* block. For example, if
+   a file starts on block 65 and continues to block 6, then FAT->next[65] == 6.
+   If a FAT table entry is "0", that means that block is the last in the file.
+
+   The last block in the FAT is used for free space allocation. Its "next" entry
+   is the first free block on the disk, whose entry is the second free block,
+   and so on. The last free block's entry in the FAT table is "0".
+
+   To allocate a block, "extract_free_blk()" simply returns the first block in
+   the list, and updates the head of the list to point to the second block.
+
+   The FAT is cached in memory, and stored to disk whenever it is modified.
+
+   This allocation policy is the analogue of the "first fit" memory allocation
+   policy. Internal fragmentation can happen, so files are not necessarily
+   contiguous.
+
+3. Uh, I suppose I'll just copy/paste from 2!
+
+   The last block in the FAT is used for free space allocation. Its "next" entry
+   is the first free block on the disk, whose entry is the second free block,
+   and so on. The last free block's entry in the FAT table is "0".
+
+   To allocate a block, "extract_free_blk()" simply returns the first block in
+   the list, and updates the head of the list to point to the second block.
+
+   When a block is freed, it is prepended to the head of the linked list.
+
+4. For large file system sizes, a number of issues arise:
+   - The file allocation table has a fixed size. To achieve larger filesystem
+     sizes, one would have to either increase the size of each block or store
+     multiple file allocation tables on the disk, for example in a linked list
+     structure. The former would waste space (more on that below); the latter
+     would require more disk seeks and more memory to store the FATs.
+   - If the block size is increased to support a larger filesystem, more space
+     will be wasted. Assuming completely random file sizes, an average of
+     BLOCK_SIZE/2 bytes are wasted per file. Increasing BLOCK_SIZE increases
+     the wasted space. Practically, though, file sizes are *not* random; most
+     files are tiny, and so the average wasted space would be much higher.
+   - If one bit of the FAT is corrupted, bad things can happen. For instance,
+     a *file* could point to the free block list, or the free block list could
+     be lost. Increasing the size of the FAT increases the chance that it will
+     be a victim of data corruption.
+   - If block sizes are kept small (and the FAT size increased), internal
+     fragmentation will become an issue (assuming the reason for increasing the
+     filesystem size is to increase the number of files stored). Internal
+     fragmentation will slow down the system: hard drives are optimized to read
+     contiguous portions of data, and disk seeks are very slow in comparison.
+
+5. M being the size of the FAT (i.e., 1 block) plus the size of the directory
+   control file (1 block), the size of a single block is M / 2 bytes. The
+   entire filesystem (including the FAT) will require
+   ((M / 2) / sizeof(ushort)) * (M / 2) = M^2 / (4 * sizeof(ushort)) bytes.
+   (The first block contains the FAT, the rest contain data.)
+
+6. Yes, we can increase filesystem size by making each non-FAT block bigger. To
+   make things simple, let's make the FAT take up half a block. (Make the other
+   half of the first block the directory control file.) Then block size
+   increases to M. The tilesystem will take
+   ((M / 2) / sizeof(ushort)) * M = M^2 / (2 * sizeof(ushort)) bytes.
+
+   We are asked to "sketch our approach" with pseudo-code. I simply don't see
+   what we're supposed to code; the above paragraph should be ample explanation.
+
+7. The meta-data are the file name and size (i.e., the entries in the fileT).
+
+8. The reading operation simply performs ceil(length / BLOCK_SIZE) calls to
+   safe_dRead(). (All accesses to the FAT are done in system memory, not flash.)
+
+   safe_dRead(), in turn, calls fseek() and fread(). (Don't worry about the
+   disk access "error" delays: those random errors are given *before* the
+   fread() and fseek() calls.)
+
+   fseek() is an instantaneous operation on a flash memory card.
+
+   So, the turnaround time is simply:
+   (fread() latency) * ceil(length / BLOCK_SIZE)

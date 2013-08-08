@@ -1,0 +1,81 @@
+ECSE427 Coding Assignment 1: A Simple Shell
+
+Adam Hooper
+260055737
+
+REQUIREMENTS
+------------
+
+GNU make, GCC and Glibc
+
+LIST OF FILES
+-------------
+builtin.[ch]: Builtin commands
+cmd.[ch]: Cmd object: the result of parsing a line of input
+history.[ch]: History object: stores a list of previous commands
+jobs.[ch]: Jobs object: job manager, runs all commands
+list.[ch]: Linked List implementation
+main.c: main program
+Makefile: makefile
+README: this file
+
+COMPILING
+---------
+
+Run "make"
+
+RUNNING
+-------
+
+Run ./shell to start the interactive shell. Type "help" for a list of builtins.
+
+RESTRICTIONS
+------------
+
+- Commands longer than 1024 characters will automatically fail.
+
+KNOWN BUGS
+----------
+
+- Running a shell from within ./shell and calling "kill -STOP" on the inner
+  shell's PID will return control to the outer shell, but will not add the
+  inner shell to the outer shell's list of jobs. Happens with bash, too.
+
+DESIGN (a.k.a., "Me blabbing on and on about my code")
+------
+
+I structured my shell as nicely as possibly. I used dynamically-allocated
+memory structures everywhere, since speed isn't a requirement, whereas *not*
+crashing (and holding unlimited background jobs, for instance) are nice
+features. Nothing bugs me more than hard-coded limits.
+
+I've also got certain ideals about coding standards. The ones I used are
+inspired by the GNOME project. Besides just taking the indentation/formatting,
+I also used GObject-esque nomenclature (_new(), _free()) to implement objects.
+
+The objects are all very simple. Cmd was inspired by setup(). List is a simple
+linked list (I use linked lists everywhere, since performance is no concern and
+I'm too lazy to write vector/hash implementations just for this shell). History
+is a glorified linked list.
+
+The builtin module only exists because I like small files.
+
+That leaves "jobs", the absolute killer aargh-this-assignment-isn't-easy
+object. Jobs handles everything -- even non-background commands. It gets
+passed a Cmd, which it either execs in the foreground or background (but first
+it has to pass along terminal control! We weren't taught about that...). If the
+command was exec'd in the background or the child was stopped (and thus
+instantly CONTinued (!)), then the Job object is added to the Jobs (manager)
+object's linked list. In between commands, a pass is run to look for zombie
+processes and clean them from the list.
+
+Signal handling: Ctrl-C (INT) prints the prompt again. A side-effect is that
+the read() system call -- which is listening for user input --  errors out,
+automatically flushing the buffer for us (this is good). As for the TSTP
+signal, well, we ignore it completely. And we have to ignore TTIN and TTOU
+because we move the terminal around between processes. But when a child is
+started, we give it the default signal handlers. We *want* TSTP to stop the
+child -- that's how the shell regains control!
+
+I'll shut up now. The code is well-tested, well-written, and well-commented.
+That is, its comments aren't incorrect, and they don't re-state the obvious.

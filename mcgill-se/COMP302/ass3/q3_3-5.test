@@ -1,0 +1,15 @@
+> (load "q3_3-5.scm")
+> (read-eval-print)
+--> print(3)
+3
+1
+--> +(print(2),1)
+2
+2
+--> *(print(1),print(100))
+1
+100
+1
+--> print(+(3,*(2,3)))
+9
+1

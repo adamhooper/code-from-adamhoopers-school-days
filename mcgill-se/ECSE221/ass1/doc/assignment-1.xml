@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+		  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+	<articleinfo>
+		<title>ECSE221 Assignment 1</title>
+
+		<author>
+			<firstname>Adam</firstname>
+			<surname>Hooper</surname>
+			<affiliation>
+				<address>
+					<otheraddr>McGill ID: 260055737</otheraddr>
+					<email>adam.hooper@mail.mcgill.ca</email>
+				</address>
+			</affiliation>
+		</author>
+	</articleinfo>
+	<sect1>
+		<title>Question 1</title>
+		<para>We are asked to write a C program that computes the sum of two unsigned decimal numbers of up to 20 digits in length, using nothing but <literal>char</literal>s.</para>
+		<para>Instead of converting from decimal to binary, adding, and converting back to decimal after, I decided to do decimal addition &mdash; <quote>by hand</quote>, as it were. Also, since it's hardly any extra effort, I decided to make it work for two strings of any length (using <function>calloc</function> to dynamically allocate memory for the return value). My code follows:</para>
+		<programlisting><xi:include href="../src/q1.c" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		<para>Basically, the program calculates the maximum length of the string to return, and fills in the numbers from right to left. It computes one digit at a time: the rightmost digits of <varname>i1</varname> and <varname>i2</varname> determine the rightmost digit of <varname>ret</varname> and <varname>carry</varname>; after which the second-rightmost digits of both <varname>i1</varname> and <varname>i2</varname> and <varname>carry</varname> determine the second-rightmost digit of <varname>ret</varname> and a new value for <varname>carry</varname>, and so on. Once <varname>i1_p</varname> travels to the left of the first digit in <varname>i1</varname>, <varname>i1</varname> has been completely added to <varname>ret</varname>; same goes for <varname>i2</varname>.</para>
+		<para>The <function>main</function> function skips past any leading <literal>0</literal>'s in <function>my_add</function>'s return value and prints the result.</para>
+		<sect2>
+			<title>Question 1 Tests</title>
+			<para>For testing, I chose to build a small Python program with some tests. Python makes it easy because it, too, can do arbitrary-length addition (much better than my above answer, too). I wrote a simple program that adds two numbers with Python, adds two numbers with my program, and compares the output of the two.</para>
+		<programlisting><xi:include href="../src/test-q1.py" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		</sect2>
+	</sect1>
+	<sect1>
+		<title>Question 2</title>
+		<para>Question 2 asks for a C function which computes the product of two <literal>long</literal> numbers. In binary, this can be done with additions, comparisons and bit-shifts. To avoid confusion, I made both the <varname>multiplier</varname> and the <varname>multiplicand</varname> positive numbers, and changed the sign at the end of the function if necessary.</para>
+		<para>The algorithm is straightforward, and is much clearer in code than in words.</para>
+		<para>Next we were asked to write a suitable test program, which I put in the <function>main</function> function. Besides the key numbers around the square root of <constant>LONG_MAX</constant> or its negative and the apparent special cases <literal>0</literal> and <literal>±1</literal>, there are no numbers worth worrying about. I put in a bunch of random ones, and compared the results of <function>product</function> to the results obtained by the C <literal>*</literal> operator.</para>
+		<programlisting><xi:include href="../src/q2.c" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+	</sect1>
+	<sect1>
+		<title>Tests</title>
+		<para>After building all these programs, I wrote a Makefile to automate the tests.</para>
+		<programlisting><xi:include href="../src/Makefile" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></programlisting>
+		<para>After creating this file, I run <command>make</command> and it will print all my errors. Below are the outputs of my two sets of tests.</para>
+		<screen><xi:include href="../src/q1.out" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></screen>
+		<screen><xi:include href="../src/q2.out" parse="text" xmlns:xi="http://www.w3.org/2003/XInclude" /></screen>
+	</sect1>
+</article>

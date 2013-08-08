@@ -1,0 +1,9 @@
+> (load "q9.scm")
+> (let->app '(let ((a 1) (b 2) (c 3)) (lambda (x) (+ x a b c))))
+((lambda (a b c) (lambda (x) (+ x a b c))) 1 2 3)
+> (((lambda (a b c) (lambda (x) (+ x a b c))) 1 2 3) 0)
+6
+> (let->app '(let ((a (+ 1 2))) (lambda (x) (+ x a b c))))
+((lambda (a) (lambda (x) (+ x a b c))) (+ 1 2))
+> (let->app '(let ((a 'sym) (b (list 1 2 3))) (cons a b)))
+((lambda (a b) (cons a b)) (quote sym) (list 1 2 3))

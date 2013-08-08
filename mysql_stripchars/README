@@ -1,0 +1,54 @@
+stripchars.c -- MySQL function.
+
+Copyright (c) Adam Hooper, 2002
+
+It's a cross between:
+
+- Perl's "tr///" (or PHP's "strtr()")
+- Character removal.
+
+This is a MySQL function. This means it is loaded in MySQL,
+and you CALL it from MySQL. So it's gotta be loaded on the server.
+
+Okay, I'll hype it up so you'll want it. Imagine this:
+
+Default:
+    SELECT stripchars("M-o#o");
+       result: "Moo". (removed -./,:()\*)
+
+Stripping function
+    SELECT stripchars("M-o#o", "-");
+       result: "Mo#o". (removed -)
+
+tr/// function
+    SELECT stripchars("M-o#o", "-#", "be")
+       result: "Mboeo" (replaced - with b and # with e)
+
+INSTALLATION
+
+Requirements: If you compiled MySQL from source, nothing. Otherwise,
+you may need mysql-devel packages from wherever you got mysql.
+
+First, to test:
+1. Run "make" (or "make static"). This'll put "stripchars.o" in whichever
+   directory you've run make from.
+2. Run "./stripchars.o". It should return "Escapb mb"
+   (stripchars('Escape me', 'e', 'b'))
+
+Then to install:
+
+1. Edit the Makefile. Don't worry, you don't have to do much -- just change
+   the first line to point to wherever your mysql.h directory is (just
+   "locate mysql.h")
+2. Run "make install". This will make stripchars.so and copy it to
+   /usr/local/lib/libstripchars.so and run /sbin/ldconfig.
+   You must be root to run make install.
+3. In your favourite MySQL client, run the following:
+
+   CREATE FUNCTION "stripchars" RETURNS STRING SONAME "libstripchars.so";
+
+4. Test in your favourite MySQL client by running the examples at the top
+   of this file.
+
+All done! Usage is explained above. The code is worth a read if you want
+to make your own MySQL functions...

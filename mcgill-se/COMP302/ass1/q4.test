@@ -1,0 +1,9 @@
+> (load "q4.scm")
+> (accumulate + 1 (lambda (x) x) 1 (lambda (x) (+ x 1)) 2) ; 1 + 2 + 1
+4
+> (product (lambda (x) (* x x)) 2 (lambda (x) (+ x 2)) 4) ; 4 * 16
+64
+> (sum (lambda (x) x) 1 (lambda (x) (+ x 1)) 10) ; 10 * 11 / 2
+55
+> (product (lambda (x) (* x x)) 2 (lambda (x) (+ x 2)) 4) ; 4 * 16
+64

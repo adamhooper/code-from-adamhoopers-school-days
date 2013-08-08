@@ -1,0 +1,14 @@
+> (load "q4_3-11.scm")
+> (read-eval-print)
+--> equal?(3,3)
+1
+--> zero?(sub1(5))
+0
+--> zero?(sub1(1))
+1
+--> if greater?(2,3) then 5 else 6
+6
+--> if less?(3,4) then 1 else 17
+1
+--> equal?(greater?(2,3),less?(3,2))
+1

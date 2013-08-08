@@ -1,0 +1,15 @@
+The priority system used in YAUThreads is simple:
+
+- Each thread is spawned using YAUSpawnPriority(threadfunc, priority). priority
+  is a positive integer greater than 0. YAUSpawn() creates thread with the
+  default priority of 1.
+- When startYAUThreads(PRIORITY) is called, the threads are sorted so that
+  higher-priority threads will be scheduled before lower-priority threads.
+- The scheduler proceeds in round-robin fashion, but allocates more time to
+  higher-priority threads. The amount of time allocated is proportional to the
+  thread's priority.
+
+This simple system prevents starvation since every thread gets processor time
+every cycle. And higher-priority threads get more CPU time.
+
+Simple, yet effective!

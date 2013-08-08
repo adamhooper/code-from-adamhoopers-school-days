@@ -1,0 +1,19 @@
+\documentclass[12pt]{article}
+\pagestyle{empty}
+\begin{document}
+
+Stirling's Formula states that $n! = \sqrt{2 \pi n}\left(\frac{n}{e}\right)^n\left(1 + \frac{1}{12n} + \epsilon\left(n\right)\right)$, where $\epsilon\left(n\right) \mbox{ is } O\left(\frac{1}{n^2}\right)$.
+Therefore, for high $n$, $n! \approx \sqrt{2 \pi n}\left(\frac{n}{e}\right)^n$.
+
+Plug this into the original equation:
+
+\begin{eqnarray*}
+\left(\begin{array}{c}n\\\frac{n}{2}\end{array}\right)
+ &=& \frac{n!}{\left(\frac{n}{2}\right)!\left(\frac{n}{2}\right)!} \\
+ &\approx& \frac{\sqrt{2\pi n}\left(\frac{n}{e}\right)^2}{\left(\sqrt{\pi n}\left(\frac{n}{2e}\right)^\frac{n}{2}\right)^2} \\
+ &\approx& \left(\sqrt{\frac{1}{n}}\right)\left(\sqrt{\frac{2}{\pi}}\right)2^n
+\end{eqnarray*}
+
+So for high $n$, the equation is approximately $\Theta\left(2^n\sqrt{\frac{1}{n}}\right)$. This is clearly $O\left(2^n\right)$ (which answers part b), and it is obviously not $\Omega\left(2^n\right)$ (which answers part c).
+
+\end{document}

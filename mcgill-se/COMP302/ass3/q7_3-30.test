@@ -1,0 +1,14 @@
+> (load "q7_3-30.scm")
+> (read-eval-print)
+--> let f = proc (y, z) +(y,-(z,5)) in (f 2 28)
+25
+--> let x = 5 in let f = proc (y, z) +(y, -(z,x)) x = 28 in (f 2 x)
+2
+--> let x = 38 f = proc (y, z) *(y,+(x,z)) g = proc (u) +(u,x) in (f (g 3) 17)
+2255
+--> let x = 5 in let x = 38 f = proc (y, z) *(y,+(x,z)) g = proc (u) +(u,x) in (f (g 3) 17)
+2255
+--> let makemult = proc (maker, x) if x then +(4,(maker maker -(x,1))) else 0 in let times4 = proc (x) (makemult makemult x) in (times4 3)
+12
+--> let a = 3 in let p = proc (x) +(x,a) a = 5 in *(a,(p 2))
+35

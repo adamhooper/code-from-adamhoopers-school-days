@@ -1,0 +1,276 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{fullpage}
+\usepackage{clrscode}
+
+\begin{document}
+
+\title{COMP251 Assignment 3}
+\author{Adam Hooper\\
+	260055737}
+\date{March 15, 2005}
+\maketitle
+
+\section*{1. Exercise 12.1-5}
+
+We know that sorting $n$ elements takes $\Omega(n \lg n)$ in the worst case. We are asked to prove that creating a binary search tree takes $\Omega(n \lg n)$ time in the worst case as well.
+
+This is a proof by contradiction. Assume there is algorithm for constructing a binary search tree in less than $\Omega(n \lg n)$ worst-case running time. Then construct the following sorting algorithm:
+
+\begin{codebox}
+\Procname{$\proc{Fast-Sort}(L)$}
+\li Build a BST from $L$ in less than $\Omega(n \lg n)$ worst-case running time
+\li Perform an inorder traversal to create an ordered list from the BST
+\end{codebox}
+
+Since the second step of this algorithm runs in $O(n)$ time, this sorting algorithm runs in less than $\Omega(n \lg n)$ worst-case running time. But this contradicts our claim that no comparison-based sorting algorithm runs in less than $\Omega(n \lg n)$ running time. Therefore, building a binary search tree using a comparison-based algorithm must take at least $\Omega(n \lg n)$ worst-case running time.
+
+\section*{2. Problems 13-2: Join operation on red-black trees}
+
+\subsection*{a. Maintain $bh[T]$ in \proc{RB-Insert} and \proc{RB-Delete}}
+
+Within \proc{RB-Insert} we maintain property 5 of red-black trees: the path from the root of $T$ to its leaves contains $bh[T]$ black nodes. Within \proc{RB-Insert-Fixup}, however, this property may change: $bh[T]$ \emph{may} increase by at most $1$. This can only occur when line 16 of \proc{RB-Insert-Fixup}, $color[root[T]] \gets \const{black}$.
+
+Prior to line 16 (i.e., in the \While loop), the black-height of the tree is guaranteed to remain the same. This follows rather trivially from the assumptions implicit in the loop. Inside the loop, the algorithm does not know whether it is dealing with a subtree or the entire tree. So the algorithm cannot modify the black-height of the subtree: if it did so, then the black-height of the root node would be inconsistent if other subtrees were present in the tree (which the algorithm must take into account, whether or not there are any).
+
+Therefore, the \While loop may not modify the black-height of the tree; only line 16 may do so. $bh[T]$ may be easily maintained: if the root of the tree is red before that step, then the black-height of the tree is about to be increased, and so $bh[T]$ should be incremented.
+
+The next trick occurs in \proc{RB-Delete}, and it is just as straightforward. The tree can only decrease in black-height within \proc{RB-Delete-Fixup}. This statement is easy to justify. At most one node will be spliced out during \proc{RB-Delete}. If the spliced-out node is red, then the black-height of the tree remains the same (indeed, \proc{RB-Delete-Fixup} is never called). Otherwise, the black-height may change, but \proc{RB-Delete-Fixup} will be called.
+
+Within \proc{RB-Delete-Fixup}, the textbook speaks of the current node as being either ``doubly-black'' or ``red-and-black.'' This simplification makes the next statement easy to justify: as the ``doubly-black'' or ``red-and-black'' node is pushed up the tree, the black-height of the tree will only decrease if the root node is ``doubly-black'' before line 23 of \proc{RB-Delete}. At line 23, we set $color[x] \gets \const{black}$ no matter what. If $x$ is not the root, this signifies that we have ended fixing the tree. If $x$ \emph{is} the root, then we are satisfying property 2 of red-black trees. But using the ``doubly-black'' simplification, we can easily see that if $x$ is the root of $T$ and is ``doubly-black'', we are decreasing the black-height of the tree. So within \proc{RB-Delete-Fixup}, we can put a conditional before line 23: \If $x = root[T]$ and $color[x] = \const{black}$, then decrement $bh[T]$.
+
+Finally, we are asked to show that while decending through $T$ we can determine the black-height of each node in $O(1)$ time. This is trivial: keep a counter starting at $bh[T]$ and decrement it as black nodes are reached while descending through $T$.
+
+\subsection*{b. Find largest black node $y$ with black-height $bh[T_2]$}
+
+\begin{codebox}
+\Procname{$\proc{Largest-In-T1-With-Black-Height-T2}(T_1, T_2)$}
+\li $x \gets root[T_1]$
+\li $h \gets bh[T_2] - 1$
+\li \While $h > 0$
+\li   \Do
+	$x \gets right[x]$
+\li	\If $color[x] = \const{black}$
+\li	  \Do
+	    $h \gets h - 1$
+	  \End
+      \End
+\li \Return $x$
+\end{codebox}
+
+This algorithm runs in $O(\lg n)$ time since the height of the trees is $O(\lg n)$. We know that $right[x]$ will always exist since we are told $bh[T_1] \ge bh[T_2]$.
+
+\subsection*{c. Replace $T_y$ with $T_y \cup \{x\} \cup T_2$}
+
+Given a $T_y$ and a $T_2$, and knowing that each element of $T_y$ is less than $x$, which is less than each element in $T_2$, we can easily see how to merge the two subtrees. Simply make a new tree with root $x$, and set $left[x] \gets root[T_y]$ and $right[x] \gets root[T_2]$.
+
+\subsection*{d. Maintain red-black properties}
+
+Assuming $y$ was found as in part (b), then we know $bh[T_y] = bh[T_2]$. So no matter what the color of $x$, we know that properties 1, 3, and 5 will be maintained. To maintain property $2$, $x$ must be made black.
+
+However, what we \emph{really} want to do in \proc{RB-Join} is join all of $T_1$ and $T_2$. To do this, we can simply replace the root of $T_y$ with our new $T_y \cup x \cup T_2$ tree, making $x$ red. Doing so will preserve properties 1, 3 and 5, since the black-height of the unioned tree will be the same as the black-height of $T_y$ and $T_2$. But this may break properties 2 and 4.
+
+Does this look familiar? Yes, it's exactly as if we'd called \proc{RB-Insert}! And so running $\proc{RB-Insert-Fixup(T, x)}$ will solve the problem. This is because the loop invariant described on page 283 is achieved. And as proven in the textbook, \proc{RB-Insert-Fixup} runs in $O(\lg n)$ time.
+
+\subsection*{e. Defending assumption in (b)}
+
+When $bh[T_1] \le bh[T_2]$, the same situation arises. Instead of finding the subtree of $T_1$ with the largest root with black-height $bh[T_1]$, we will search for the subtree of $T_2$ with the smallest root with black-height $bh[T_1]$ (let's call it $T_z$). Then we will replace $z$ in $T_2$ with $T_1 \cup x \cup T_z$ and call $\proc{RB-Insert-Fixup(T, x)}$.
+
+\subsection*{f. $O(\lg n)$ running time}
+
+\proc{RB-Join} contains only $O(1)$ operations and $O(\lg n)$ operations. Maintaining the black-height of a tree does not affect the asymptotic running-time of \proc{RB-Insert} or \proc{RB-Delete}, and so finding the black-height of a tree can be done in $O(1)$ time. Finding the largest subtree in $T_1$ with black-height $bh[T_2]$ takes $O(\lg n)$ time. Joining the two binary trees takes $O(1)$ time, and running \proc{RB-Insert-Fixup} on the result takes $O(\lg n)$ time. Therefore, the entire running time is $O(\lg n)$.
+
+\section*{3. Problem 13-3: AVL trees}
+
+\subsection*{a. Prove an AVL tree with $n$ nodes has height $O(\lg n)$}
+
+Let us find the minimum number of nodes in an AVL tree of height $h$. For $h = 0$, $n = 0$. For $h = 1$, $n = 1$. And to find the least number of nodes in an AVL tree of height $h > 1$, we can recurse: $N_h = 1 + N_{h - 1} + N_{h - 2}$: $1$ for the root node, $N_{h - 1}$ because one of the subtrees must have height $h - 1$ for the height of the tree to be $h$ (by definition of height), and $N_{h - 2}$ because the other subtree (which we'd want to have the fewest nodes possible) cannot have height less than $h - 2$.
+
+So $N_h$ grows faster than the Fibonacci sequence when $h > 2$. This means the most unbalanced tree possible of height $h$ has more than $F_h$ nodes. Liberally applying inequalities, we can see that $F_h \ge 2F_{h - 2}$ and so $F_h \ge 2^{\left\lfloor \frac{h}{2} \right\rfloor}$. So in a tree of height $h$, there are at least $2^{\left\lfloor \frac{h}{2} \right\rfloor}$ nodes.
+
+\begin{eqnarray*}
+n &\ge& 2^{\left\lfloor \frac{h}{2} \right\rfloor} \\
+\lg n &\ge& \left\lfloor \frac{h}{2} \right\rfloor \\
+2 \lg n + 1 &\ge& h
+\end{eqnarray*}
+
+And so $h$ grows in order $O(\lg n)$.
+
+\subsection*{b. \proc{Balance}}
+
+\begin{codebox}
+\Procname{$\proc{Balance}(x)$}
+\li $T \gets tree[x]$
+\li \If $left[x] = \const{nil}$ and $right[x] \ne \const{nil}$ and $h[right[x]] = 1$
+\li   \Then
+	$h[x] \gets 0$
+\li	$\proc{Left-Rotate}(T, right[x])$
+\li \ElseIf $right[x] = \const{nil}$ and $left[x] \ne \const{nil}$ and $h[left[x]] = 1$
+\li   \Then
+	$h[x] \gets 0$
+\li	$\proc{Right-Rotate}(T, right[x])$
+\li \ElseIf $left[x] \ne \const{nil}$ and $right[x] \ne \const{nil}$
+\li   \Then
+	\If $h[left[x]] = h[right[x]] + 2$
+\li	  \Then
+	    $h[x] \gets h[right[x]] + 1$
+\li	    $\proc{Right-Rotate}(T, left[x])$
+\li	\ElseIf $h[right[x]] = h[left[x]] + 2$
+\li	  \Then
+	    $h[x] \gets h[left[x]] + 1$
+\li	    $\proc{Left-Rotate}(T, right[x])$
+	  \End
+      \End
+\end{codebox}
+
+After rotation, we know that $h[left[x]] = h[right[x]]$; so $h[x]$ is simply one greater than that.
+
+\subsection*{c. \proc{AVL-Insert}}
+
+\begin{codebox}
+\Procname{$\proc{AVL-Insert}(x, z)$}
+\li \If $key[z] \le key[x]$
+\li   \Then
+	\If $left[x] = \const{nil}$
+\li	  \Then
+	    $left[x] \gets z$
+\li	    $p[z] \gets x$
+\li	    $h[x] \gets 1$ \Comment will be corrected by \proc{Balance} if incorrect
+\li	  \Else
+	    $\proc{AVL-Insert}(left[x], z)$
+	  \End
+\li   \Else
+	\If $right[x] = \const{nil}$
+\li	  \Then
+	    $right[x] \gets z$
+\li	    $p[z] \gets x$
+\li	    $h[x] \gets 1$
+\li	  \Else
+	    $\proc{AVL-Insert}(right[x], z)$
+	  \End
+      \End
+\li $\proc{Balance}(x)$
+\end{codebox}
+
+\subsection*{d. Running time of \proc{AVL-Insert}}
+
+Observe the following:
+\begin{itemize}
+\item \proc{Balance} runs in $O(1)$ time (since \proc{Left-Rotate} and \proc{Right-Rotate} run in $O(1)$ time).
+\item In each recursive step, \proc{AVL-Insert} is called on a node with a height of at least $1$ less than the height of the current node.
+\item AVL trees have a height in the order of $O(\lg n)$.
+\end{itemize}
+
+Since \proc{AVL-Insert} does not loop, we can easily deduce that it runs in $O(\lg n)$ time.
+
+Next, we are to prove that at most $O(1)$ rotations are made in \proc{AVL-Insert}. Imagine a case in which \proc{Balance} is necessary on a subtree $T_x$. The subtree contains a child subtree $T_y$ with height $h$ and another child subtree $T_z$ with height $h - 2$. Therefore the height of $T_x$ is $h + 1$. This situation could only arise if the height of $T_y$ had been $h - 1$ before $x$ was added to $T_y$ with \proc{AVL-Insert} (deduced from the definition of AVL trees). In other words, the height of $T_x$ had been $h$ before the additional node was added. After rotation, the height of the entire subtree (now rooted at $T_y$'s root) will be $h$; therefore the heights of all higher subtrees will be valid. This means no more than one rotation will be made per insertion.
+
+\section*{4. Problem 15-4: Planning a company party}
+
+To solve the large problem of maximizing conviviality, we must first solve the sub-problems. From a given tree of height 2, we may take one of two approaches:
+\begin{itemize}
+\item Add the maximum convivialities of each subtree; or
+\item Add the root's conviviality to the maximum convivialities of each sub-subtree.
+\end{itemize}
+The latter may give us  a larger sum than the former, but because of the problem's restrictions it may cause the higher-up problems to give smaller sums; therefore, we must store both of these numbers for each sub-tree.
+
+At each step of the problem, we must also store the list of names which make up the conviviality ratings. Let us therefore define, for a node $n$, the properties $names[n]$ and $convsum[n]$ to be the list of names and sum of convivialities for a node; let $namessub[n]$ and $convsumsub[n]$ be the list of names and sum of convivialities for a node when ignoring direct children. Let us assume each node $n$ already has the properties $name[n]$ and $conv[n]$, representing the name of a particular employee and his conviviality. The algorithm should look like this:
+
+\begin{codebox}
+\Procname{$\proc{Plan-Party}(T)$}
+\li \For $d \gets depth[T]$ \Downto $1$
+\li   \Do
+\li	\For $n \gets $ first node of depth $d$ \To last node of depth $d$
+\li	  \Do
+	    \If $n$ is a leaf
+\li	      \Then
+		$namessub[n] \gets \{\}$
+\li		$convsumsub[n] \gets 0$
+\li		$names[n] \gets \{name[n]\}$
+\li		$convsum[n] \gets conv[n]$
+\li	    \Else
+		$tmpnames \gets \{\}$
+\li		$tmpsum \gets 0$
+\li		$namessub[n] \gets \{\}$
+\li		$convsumsub[n] \gets 0$
+\li		\For $m \gets $ first child of $n$ \To last child of $n$
+\li		  \Do
+		    $namessub[n] \gets namessub[n] + names[m]$
+\li		    $convsumsub[n] \gets convsumsub[n] + convsum[m]$
+\li		    $tmpnames \gets tmpnames + namessub[m]$
+\li		    $tmpsum \gets tmpsum + convsumsub[m]$
+		  \End
+\li		\If $tmpsum + conv[n] > convsumsub[n]$
+\li		  \Then
+		    $convsum[n] \gets tmpsum + conv[n]$
+\li		    $names[n] \gets tmpnames + \{name[n]\}$
+\li		  \Else
+		    $convsum[n] \gets convsumsub[n]$
+\li		    $names[n] \gets namessub[n]$
+		\End
+	    \End
+          \End
+      \End
+\li \Return $names[root[T]]$
+\end{codebox}
+
+The running time of this algorithm will be $O(n)$. That is because it iterates over each node of the tree a fixed number of times: on each node, $namessub$, $convsumsub$, $names$ and $convsum$ are written and read exactly once, because after each iteration of the loop all sub-children are ignored forever.
+
+There is some slight hand-waving in this claim of $O(n)$ running time: how do we iterate over all elements of the tree in the order defined (highest depth to lowest)? Well, we could assume that we are given a structure which already allows us to iterate in such a manner. In general, though, it can still be done without affecting asymptotic running time. What follows is as a simple, messy sample algorithm: allocate an array of size $depth[T]$, each element corresponding to a list, and then traverse the tree, inserting the nodes into the appropriate lists (like bucket sort). \proc{Plan-Party} could then use this array of lists for its iterations. Since this algorithm would take place outside of \proc{Plan-Party} and since it is $O(n)$ as well (it is a tree traversal), the entire running time would remain $O(n)$.
+
+\section*{5. Problem 15-6: Moving on a checkerboard}
+
+As with the assembly-line problem described in class, the checkerboard problem is easiest to solve backwards. We will create an $n \times n$ grid called $P$ to hold dollar sums and an $n \times (n - 1)$ grid called $M$ to hold moves. $P_{x,y}$ will store the maximum dollar sum one could achieve if starting on the board from square $(x, y)$. $M_{x,y}$ will store the next move required to achieve that sum.
+
+The solution is straightforward and extremely similar to the assembly-line problem in class, so instead of trying to explain I will simply let the code speak for itself:
+
+\begin{codebox}
+\Procname{$\proc{Richest-Path}(p)$}
+\li $P \gets n \times n$ matrix of $0$s
+\li $M \gets n \times (n - 1)$ uninitialized matrix
+\li \For $r \gets n - 1$ \Downto $1$
+\li   \Do
+	\For $c \gets 1$ \To $n$
+\li	  \Do
+	    $P_{c,r} \gets P_{c,r+1} + p((c, r), (c, r + 1))$
+\li	    $M_{c,r} \gets \const{Up}$
+\li	    \If $c > 1$ and $P_{c-1,r+1} + p((c, r), (c-1, r+1)) > P_{c,r}$
+\li	      \Then
+		$P_{c,r} \gets P_{c-1,r+1} + p((c,r), (c-1,r+1))$
+\li		$M_{c,r} \gets \const{Up-Left}$
+	      \End
+\li	    \If $c < n$ and $P_{c+1,r+1} + p((c,r), (c+1,r+1)) > P_{c,r}$
+\li	      \Then
+		$P_{c,r} \gets P_{c+1,r+1} + p((c,r), (c+1,r+1))$
+\li		$M_{c,r} \gets \const{Up-Right}$
+	      \End
+	  \End
+      \End
+\li $c \gets 1$
+\li $m \gets P_{1,1}$
+\li \For $i \gets 2$ \To $n$ \Comment Find the start column $c$
+\li   \Do
+	\If $P_{i,1} > m$
+\li	  \Then
+	    $m \gets P_{i,1}$
+\li	    $c \gets i$
+	  \End
+      \End
+\li $\proc{Print}($Starting square: $(c, 1))$
+\li \For $r \gets 1$ \To $n$ \Comment Print the list of moves
+\li   \Do
+	$\proc{Print}($Next move: $M_{c,r})$
+\li	\If $M_{c,r} = \const{Up-Left}$
+\li	  \Then
+	    $c \gets c - 1$
+\li	\ElseIf $M_{c,r} = \const{Up-Right}$
+\li	  \Then
+	    $c \gets c + 1$
+	\End
+      \End
+\end{codebox}
+
+(The double loop in \proc{Richest-Path} may end up setting a value to $P(c, r)$ three times, which is rather inelegant. The algorithm could obviously be adjusted, but that would make it less legible. Also, making $P$ an $n \times n$ matrix is rather overkill: really, only two rows are accessed at a time so the algorithm could use an $n \times 2$ matrix instead. But that would make the algorithm slightly more confusing.)
+
+The running time analysis is simple. \proc{Richest-Path} is divided into three main sections: one to populate the $P$ and $M$ matrices, one to find the starting row, and one to print the list of moves. The first part is $O(n^2)$ since it contains a loop within a loop, both of size $n$. The second part is $O(n)$ and the third part is $O(n)$. Therefore, the running time of this algorithm is $O(n^2)$.
+
+\end{document}

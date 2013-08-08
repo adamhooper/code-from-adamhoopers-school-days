@@ -1,0 +1,20 @@
+We are asked to show that (Y f) = (f (Y f)) for any f in this function:
+
+(define Y
+  (lambda (f)
+    ((lambda (x) (f (x x)))
+      (lambda (x) (f (x x))))))
+
+Applying Y to some function f, we compute (Y f) to be:
+
+((lambda (x) (f (x x)))
+  (lambda (x) (f (x x))))
+
+And if we apply the first lambda function to the second -- that is, plug the
+second into the body of the first (replacing the x's), we get:
+
+(f
+  ((lambda (x) (f (x x)))
+    (lambda (x) (f (x x)))))
+
+Look familiar? It's (f (Y f)) -- QED.

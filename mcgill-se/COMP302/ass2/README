@@ -1,0 +1,18 @@
+Directory contents:
+
+- q1: Answer to Question 1
+- q2.scm: Scheme functions for Question 2
+- q2.test: Interactive Scheme session testing q2.scm
+- q3.scm: Scheme functions for Question 3
+- q3.test: Interactive Scheme session testing q3.scm
+- q4.scm: Scheme functions for Question 4
+- q4.test: Interactive Scheme session testing q4.scm
+- q5.scm: Scheme functions for Question 5
+- q5.test: Interactive Scheme session testing q5.scm
+- q6.scm: Scheme functions for Question 6
+- q6.test: Interactive Scheme session testing q6.scm
+- q7: Answer to Question 7
+- q8.scm: Scheme functions for Question 8
+- q8.test: Interactive Scheme session testing q8.scm
+- q9.scm: Scheme functions for Question 9
+- q9.test: Interactive Scheme session testing q9.scm

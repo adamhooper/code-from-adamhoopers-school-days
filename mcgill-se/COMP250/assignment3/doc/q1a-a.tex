@@ -1,0 +1,25 @@
+\documentclass[12pt]{article}
+\pagestyle{empty}
+\begin{document}
+
+Show that it is $O\left(n^{r+1}\right)$:
+
+\begin{eqnarray*}
+\sum_{i=1}^n \left.i^r\right.
+	& \le & \sum_{i=1}^n \left.n^r\right. \\
+	& \le & n \times n^r \\
+	& \le & n^{r+1} \\
+\end{eqnarray*}
+
+Now show that it is $\Omega\left(n^{r+1})\right)$:
+
+\begin{eqnarray*}
+\sum_{i=1}^n\left.i^r\right.
+	& \ge & \sum_{i=1}^b \left.\left(\frac{n}{2}\right)^r\right. \\
+	& \ge & n \times \frac{n^r}{2^r} \\
+	& \ge & \frac{n^{r+1}}{2^r} \\
+\end{eqnarray*}
+
+Since the sum is both $O\left(n^{r+1}\right)$ and $\Omega\left(n^{r+1}\right)$, it is $\Theta\left(n^{r+1}\right)$.
+
+\end{document}
